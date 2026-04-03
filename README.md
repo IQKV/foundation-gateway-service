@@ -45,7 +45,6 @@ This is the front door to the IQ Scaffold microservices ecosystem. Built on Spri
 - Authority propagation via headers (X-User-Authorities, X-User-Email, X-User-Permissions, X-Organization-ID)
 - Header sanitization to prevent spoofing attacks (removes all user/tenant context headers from incoming requests)
 - Public path pattern matching (exact and wildcard `/**`)
-- Route-level authority enforcement via `PlatformConfigurationProperties`
 - MDC logging with user and tenant context
 
 ### 🏢 Multi-Tenancy Support
