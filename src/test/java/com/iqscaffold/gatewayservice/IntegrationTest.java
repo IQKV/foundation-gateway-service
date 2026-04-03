@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
+package com.iqscaffold.gatewayservice;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.boot.test.context.SpringBootTest;
+
 /**
- * Root package for the IAM Service — multi-tenant identity and access management.
+ * Base composite annotation for integration tests.
  */
-package com.iqscaffold.iam;
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@SpringBootTest(classes = {GatewayServiceApplication.class})
+public @interface IntegrationTest {
+
+}

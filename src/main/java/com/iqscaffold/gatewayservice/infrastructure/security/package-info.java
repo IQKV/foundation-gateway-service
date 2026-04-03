@@ -15,6 +15,6 @@
  */
 
 /**
- * Spring configuration classes (MyBatis, RabbitMQ, Security, ShedLock, etc.).
+ * Security filters, authentication handlers, and related components.
  */
-package com.iqscaffold.iam.infrastructure.config;
+package com.iqscaffold.gatewayservice.infrastructure.security;

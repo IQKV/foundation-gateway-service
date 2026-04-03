@@ -15,6 +15,6 @@
  */
 
 /**
- * RabbitMQ event publishers and consumers (e.g. TenantProvisioningConsumer).
+ * Root package for the Gateway Service — API gateway with routing, authentication, and rate limiting.
  */
-package com.iqscaffold.iam.infrastructure.messaging;
+package com.iqscaffold.gatewayservice;

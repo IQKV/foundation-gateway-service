@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-/**
- * Security filters: JwtAuthenticationFilter, TenantExtractionFilter, and related components.
- */
-package com.iqscaffold.iam.infrastructure.security;
+package com.iqscaffold.gatewayservice;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class GatewayServiceApplicationTests {
+
+  @Test
+  void contextLoads() {
+  }
+}

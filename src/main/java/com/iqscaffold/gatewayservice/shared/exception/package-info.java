@@ -15,6 +15,6 @@
  */
 
 /**
- * Shared domain primitives used across bounded contexts (e.g. TenantContext, base value objects).
+ * Common exceptions shared across bounded contexts.
  */
-package com.iqscaffold.iam.shared.domain;
+package com.iqscaffold.gatewayservice.shared.exception;

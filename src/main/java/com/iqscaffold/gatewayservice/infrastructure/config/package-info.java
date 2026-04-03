@@ -15,6 +15,6 @@
  */
 
 /**
- * Utility classes (e.g. NanoIdGenerator for tenantKey generation).
+ * Spring configuration classes (Security, OpenAPI, etc.).
  */
-package com.iqscaffold.iam.shared.util;
+package com.iqscaffold.gatewayservice.infrastructure.config;

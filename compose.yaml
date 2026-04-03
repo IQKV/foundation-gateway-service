@@ -1,5 +1,5 @@
 # This configuration is intended for development purposes
-name: dev-servicename
+name: dev-gateway-service
 services:
   sonar:
     container_name: dev-sonarqube

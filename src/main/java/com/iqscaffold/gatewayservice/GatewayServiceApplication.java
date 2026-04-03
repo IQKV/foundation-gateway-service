@@ -14,7 +14,18 @@
  * limitations under the License.
  */
 
-/**
- * Common exceptions: MembershipNotFoundException, TenantNotFoundException, etc.
- */
-package com.iqscaffold.iam.shared.exception;
+package com.iqscaffold.gatewayservice;
+
+import java.util.TimeZone;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class GatewayServiceApplication {
+
+  public static void main(String[] args) {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    SpringApplication.run(GatewayServiceApplication.class, args);
+  }
+}

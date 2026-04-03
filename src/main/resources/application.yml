@@ -7,8 +7,10 @@
 
 spring:
   application:
-    name: iam-service
-
+    name: iqscaffold-gateway-service
+  output:
+    ansi:
+      enabled: always
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"

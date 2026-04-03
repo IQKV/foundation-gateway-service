@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqscaffold.iam;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
-class IamServiceApplicationTests {
-
-  @Test
-  void contextLoads() {
-  }
-}
+/**
+ * Shared utility classes.
+ */
+package com.iqscaffold.gatewayservice.shared.util;

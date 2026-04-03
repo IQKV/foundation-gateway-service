@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqscaffold.iam;
+package com.iqscaffold.gatewayservice;
 
 import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
@@ -25,7 +25,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
-@AnalyzeClasses(packagesOf = IamServiceApplication.class, importOptions = DoNotIncludeTests.class)
+@AnalyzeClasses(packagesOf = GatewayServiceApplication.class, importOptions = DoNotIncludeTests.class)
 class TechnicalStructureTest {
 
   // prettier-ignore
@@ -41,5 +41,5 @@ class TechnicalStructureTest {
       .adapter("config",      "..infrastructure.config..")
       .adapter("security",    "..infrastructure.security..")
 
-      .ignoreDependency(belongToAnyOf(IamServiceApplication.class), alwaysTrue());
+      .ignoreDependency(belongToAnyOf(GatewayServiceApplication.class), alwaysTrue());
 }
