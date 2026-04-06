@@ -1,6 +1,6 @@
 # 🌐 IQ Key Value Gateway Service
 
-> Reactive API gateway providing intelligent routing, JWT authentication, tenant context propagation, and observability across microservices.
+> Reactive API gateway providing intelligent routing, JWT authentication, and tenant context propagation across microservices.
 
 ## Table of Contents
 
