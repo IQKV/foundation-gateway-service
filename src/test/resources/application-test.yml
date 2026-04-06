@@ -1,0 +1,15 @@
+# Spring Boot configuration for the "test" profile.
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/.well-known/jwks.json
+
+iqkv:
+  gateway:
+    public-paths:
+      - /actuator/**
+      - /api-docs/**
+      - /swagger-ui/**

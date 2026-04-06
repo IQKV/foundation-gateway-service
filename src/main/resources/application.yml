@@ -1,8 +1,6 @@
 # ===================================================================
 # Spring Boot configuration.
-#
-# This configuration will be overridden by the Spring profile you use,
-# for example application-dev.yml if you use the "dev" profile.
+# Overridden by active profile (e.g. application-dev.yml).
 # ===================================================================
 
 spring:
@@ -11,6 +9,91 @@ spring:
   output:
     ansi:
       enabled: always
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${IAM_JWKS_URI:http://localhost:8080/.well-known/jwks.json}
+  cloud:
+    gateway:
+      # ---------------------------------------------------------------------------
+      # Global CORS
+      # ---------------------------------------------------------------------------
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "${CORS_ALLOWED_ORIGINS:*}"
+            allowedMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+            allowedHeaders: ["*"]
+            allowCredentials: false
+            maxAge: 3600
+      # ---------------------------------------------------------------------------
+      # Routes
+      # ---------------------------------------------------------------------------
+      routes:
+        # IAM Service — JWKS (public, no auth)
+        - id: iam-jwks
+          uri: ${IAM_SERVICE_URI:http://localhost:8080}
+          predicates:
+            - Path=/.well-known/**
+
+        # IAM Service — all API endpoints (/api/v1/iam/**)
+        # Public vs protected distinction is enforced by SecurityConfig + GatewayProperties.
+        # Header sanitization (X-User-*, X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
+        - id: iam-api
+          uri: ${IAM_SERVICE_URI:http://localhost:8080}
+          predicates:
+            - Path=/api/v1/iam/**
+
+# ---------------------------------------------------------------------------
+# Actuator
+# ---------------------------------------------------------------------------
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+
+# ---------------------------------------------------------------------------
+# SpringDoc / Swagger UI  (webflux variant)
+# ---------------------------------------------------------------------------
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    # Aggregate specs from downstream services
+    urls:
+      - name: IAM Service
+        url: ${IAM_SERVICE_URI:http://localhost:8080}/api-docs
+      - name: Gateway
+        url: /api-docs
+  # Allow swagger-ui to reach downstream api-docs through the gateway
+  webjars:
+    prefix: ""
+
+# ---------------------------------------------------------------------------
+# Gateway-specific properties
+# ---------------------------------------------------------------------------
+iqkv:
+  gateway:
+    public-paths:
+      # IAM auth — temporarily fully public for UI development
+      - /api/v1/iam/**
+      - /.well-known/**
+      - /actuator/**
+      - /api-docs/**
+      - /swagger-ui/**
+      - /swagger-ui.html
+      - /webjars/**
+
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"
