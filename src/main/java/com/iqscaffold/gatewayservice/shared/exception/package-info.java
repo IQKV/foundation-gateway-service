@@ -17,4 +17,4 @@
 /**
  * Common exceptions shared across bounded contexts.
  */
-package com.iqscaffold.gatewayservice.shared.exception;
+package dev.iqkv.gatewayservice.shared.exception;

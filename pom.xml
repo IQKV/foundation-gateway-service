@@ -8,10 +8,10 @@
         <version>3.4.5</version>
     </parent>
 
-    <groupId>com.iqscaffold</groupId>
-    <artifactId>iqscaffold-gateway-service</artifactId>
+    <groupId>dev.iqkv</groupId>
+    <artifactId>iqkv-gateway-service</artifactId>
     <version>0.0.0-SNAPSHOT</version>
-    <name>IQ Scaffold Gateway Service</name>
+    <name>IQ Key Value Gateway Service</name>
     <description>API Gateway with routing, authentication, and rate limiting</description>
 
     <properties>
@@ -21,7 +21,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <spring-boot.run.jvmArguments>-Duser.timezone=UTC</spring-boot.run.jvmArguments>
-        <start-class>com.iqscaffold.gatewayservice.GatewayServiceApplication</start-class>
+        <start-class>dev.iqkv.gatewayservice.GatewayServiceApplication</start-class>
         <checkstyle.skip>true</checkstyle.skip>
         <jacoco.skip>true</jacoco.skip>
         <maven.gitcommitid.skip>false</maven.gitcommitid.skip>

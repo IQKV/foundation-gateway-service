@@ -17,4 +17,4 @@
 /**
  * Spring configuration classes (Security, OpenAPI, etc.).
  */
-package com.iqscaffold.gatewayservice.infrastructure.config;
+package dev.iqkv.gatewayservice.infrastructure.config;

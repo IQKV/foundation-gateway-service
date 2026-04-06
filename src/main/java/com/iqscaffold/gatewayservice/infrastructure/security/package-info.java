@@ -17,4 +17,4 @@
 /**
  * Security filters, authentication handlers, and related components.
  */
-package com.iqscaffold.gatewayservice.infrastructure.security;
+package dev.iqkv.gatewayservice.infrastructure.security;

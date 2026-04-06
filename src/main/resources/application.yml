@@ -7,7 +7,7 @@
 
 spring:
   application:
-    name: iqscaffold-gateway-service
+    name: iqkv-gateway-service
   output:
     ansi:
       enabled: always

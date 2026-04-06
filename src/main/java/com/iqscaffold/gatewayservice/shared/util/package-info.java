@@ -17,4 +17,4 @@
 /**
  * Shared utility classes.
  */
-package com.iqscaffold.gatewayservice.shared.util;
+package dev.iqkv.gatewayservice.shared.util;

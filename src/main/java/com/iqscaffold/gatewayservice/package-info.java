@@ -17,4 +17,4 @@
 /**
  * Root package for the Gateway Service — API gateway with routing, authentication, and rate limiting.
  */
-package com.iqscaffold.gatewayservice;
+package dev.iqkv.gatewayservice;
