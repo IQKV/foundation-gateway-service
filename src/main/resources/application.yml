@@ -3,6 +3,9 @@
 # Overridden by active profile (e.g. application-dev.yml).
 # ===================================================================
 
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   application:
     name: iqkvdev-gateway-service
@@ -50,7 +53,7 @@ spring:
 # ---------------------------------------------------------------------------
 management:
   server:
-    port: 8081
+    port: ${MANAGEMENT_PORT:8081}
   endpoints:
     web:
       exposure:

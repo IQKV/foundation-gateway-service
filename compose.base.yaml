@@ -1,0 +1,68 @@
+services:
+  # Gateway Service - Local Development
+  gateway-service:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: builder
+    image: iqkv/iqkvdev-gateway-service:dev
+    container_name: iqkvdev-gateway-service-dev
+    environment:
+      # Spring Configuration
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_APPLICATION_NAME: iqkvdev-gateway-service
+
+      # IAM Service (must be running separately or on shared network)
+      IAM_SERVICE_URI: ${IAM_SERVICE_URI:http://host.docker.internal:8080}
+      IAM_JWKS_URI: ${IAM_JWKS_URI:http://host.docker.internal:8080/.well-known/jwks.json}
+
+      # CORS
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:*}
+
+      # Observability
+      OTEL_SERVICE_NAME: iqkvdev-gateway-service
+      OTEL_RESOURCE_ATTRIBUTES: service.name=iqkvdev-gateway-service,service.version=1.0.0,deployment.environment=dev
+
+      # JVM Configuration
+      JAVA_OPTS: >-
+        -Xms128m
+        -Xmx256m
+        -XX:+UseG1GC
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -Djava.security.egd=file:/dev/./urandom
+    ports:
+      - "8080:8080" # Gateway API
+      - "8081:8081" # Actuator / management
+    networks:
+      - gateway-service-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    volumes:
+      - gateway_logs:/app/logs
+      - gateway_tmp:/app/tmp
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  # SonarQube for static analysis
+  sonar:
+    container_name: dev-sonarqube
+    image: sonarqube:25.3.0.104237-community
+    environment:
+      - SONAR_FORCEAUTHENTICATION=false
+    ports:
+      - 127.0.0.1:9000:9000
+    networks:
+      - gateway-service-network
+    restart: unless-stopped

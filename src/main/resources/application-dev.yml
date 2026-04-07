@@ -8,6 +8,9 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.security: DEBUG
 
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   security:
     oauth2:

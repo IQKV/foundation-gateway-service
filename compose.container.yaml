@@ -1,0 +1,25 @@
+# Full platform run including build phase
+name: dev-gateway-service-full
+services:
+  gateway-service:
+    extends:
+      file: compose.base.yaml
+      service: gateway-service
+
+  sonar:
+    extends:
+      file: compose.base.yaml
+      service: sonar
+
+networks:
+  gateway-service-network:
+    name: iqkvdev-gateway-network-dev
+    external: false
+
+volumes:
+  gateway_logs:
+    name: iqkv_gateway_logs_dev
+    driver: local
+  gateway_tmp:
+    name: iqkv_gateway_tmp_dev
+    driver: local
