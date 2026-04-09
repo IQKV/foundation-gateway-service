@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice.infrastructure.security;
+package com.iqkv.foundation.gatewayservice.infrastructure.security;
 
 import java.util.List;
 import java.util.stream.Collectors;

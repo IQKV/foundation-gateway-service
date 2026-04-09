@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice;
+package com.iqkv.foundation.gatewayservice;
 
 import java.util.TimeZone;
 
-import com.iqkv.gatewayservice.infrastructure.config.GatewayProperties;
+import com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

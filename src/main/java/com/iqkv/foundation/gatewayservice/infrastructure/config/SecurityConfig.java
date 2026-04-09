@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice.infrastructure.config;
+package com.iqkv.foundation.gatewayservice.infrastructure.config;
 
 import java.util.Collection;
 import java.util.List;

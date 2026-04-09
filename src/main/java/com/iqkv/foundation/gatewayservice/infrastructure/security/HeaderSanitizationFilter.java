@@ -14,42 +14,45 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice.infrastructure.security;
+package com.iqkv.foundation.gatewayservice.infrastructure.security;
+
+import java.util.List;
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Adds security response headers and echoes the correlation ID back to the client.
- * Runs last in the post-processing phase (order {@code Integer.MIN_VALUE + 1}).
+ * Strips all user/tenant context headers from incoming client requests to prevent
+ * identity spoofing. Runs before JWT extraction (order {@code -190}).
  */
 @Component
-public class ResponseTransformationFilter implements GlobalFilter, Ordered {
+public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
+
+  private static final List<String> PROTECTED_HEADERS = List.of(
+      "X-User-ID",
+      "X-Username",
+      "X-User-Email",
+      "X-User-Authorities",
+      "X-User-Permissions",
+      "X-Tenant-ID",
+      "X-Organization-ID"
+  );
 
   @Override
   public int getOrder() {
-    return Integer.MIN_VALUE + 1;
+    return -190;
   }
 
   @Override
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
-    return chain.filter(exchange).then(Mono.fromRunnable(() -> {
-      final HttpHeaders headers = exchange.getResponse().getHeaders();
-      headers.set("X-Content-Type-Options", "nosniff");
-      headers.set("X-Frame-Options", "DENY");
-      headers.set("X-XSS-Protection", "1; mode=block");
-      headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-      final String correlationId = (String) exchange.getAttributes()
-          .get(CorrelationIdFilter.CORRELATION_ID_ATTR);
-      if (correlationId != null) {
-        headers.set(CorrelationIdFilter.CORRELATION_ID_HEADER, correlationId);
-      }
-    }));
+    final ServerHttpRequest sanitized = exchange.getRequest().mutate()
+        .headers(headers -> PROTECTED_HEADERS.forEach(headers::remove))
+        .build();
+    return chain.filter(exchange.mutate().request(sanitized).build());
   }
 }

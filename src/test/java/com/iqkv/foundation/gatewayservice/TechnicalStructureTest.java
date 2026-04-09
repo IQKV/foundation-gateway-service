@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice;
+package com.iqkv.foundation.gatewayservice;
 
 import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;

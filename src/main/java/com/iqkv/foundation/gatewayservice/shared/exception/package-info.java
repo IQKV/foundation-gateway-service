@@ -15,6 +15,6 @@
  */
 
 /**
- * Spring configuration classes (Security, OpenAPI, etc.).
+ * Common exceptions shared across bounded contexts.
  */
-package com.iqkv.gatewayservice.infrastructure.config;
+package com.iqkv.foundation.gatewayservice.shared.exception;

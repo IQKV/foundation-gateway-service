@@ -15,6 +15,6 @@
  */
 
 /**
- * Root package for the Gateway Service — API gateway with routing, authentication, and rate limiting.
+ * Spring configuration classes (Security, OpenAPI, etc.).
  */
-package com.iqkv.gatewayservice;
+package com.iqkv.foundation.gatewayservice.infrastructure.config;

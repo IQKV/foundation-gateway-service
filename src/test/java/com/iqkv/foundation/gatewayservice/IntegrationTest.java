@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice;
+package com.iqkv.foundation.gatewayservice;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

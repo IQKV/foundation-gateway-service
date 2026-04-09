@@ -14,17 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
-@SpringBootTest
-@ActiveProfiles("test")
-class GatewayServiceApplicationTests {
-
-  @Test
-  void contextLoads() {
-  }
-}
+/**
+ * Security filters, authentication handlers, and related components.
+ */
+package com.iqkv.foundation.gatewayservice.infrastructure.security;

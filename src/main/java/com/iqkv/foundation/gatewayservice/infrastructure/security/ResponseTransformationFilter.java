@@ -14,45 +14,42 @@
  * limitations under the License.
  */
 
-package com.iqkv.gatewayservice.infrastructure.security;
-
-import java.util.UUID;
+package com.iqkv.foundation.gatewayservice.infrastructure.security;
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Generates or propagates a {@code X-Correlation-ID} header on every request.
- * Runs first in the filter chain (order {@code -200}).
+ * Adds security response headers and echoes the correlation ID back to the client.
+ * Runs last in the post-processing phase (order {@code Integer.MIN_VALUE + 1}).
  */
 @Component
-public class CorrelationIdFilter implements GlobalFilter, Ordered {
-
-  public static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
-  public static final String CORRELATION_ID_ATTR = "correlationId";
+public class ResponseTransformationFilter implements GlobalFilter, Ordered {
 
   @Override
   public int getOrder() {
-    return -200;
+    return Integer.MIN_VALUE + 1;
   }
 
   @Override
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
-    final String correlationId = exchange.getRequest().getHeaders()
-        .getFirst(CORRELATION_ID_HEADER);
-    final String resolved = (correlationId != null && !correlationId.isBlank())
-        ? correlationId : UUID.randomUUID().toString();
+    return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+      final HttpHeaders headers = exchange.getResponse().getHeaders();
+      headers.set("X-Content-Type-Options", "nosniff");
+      headers.set("X-Frame-Options", "DENY");
+      headers.set("X-XSS-Protection", "1; mode=block");
+      headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
-    exchange.getAttributes().put(CORRELATION_ID_ATTR, resolved);
-
-    final ServerWebExchange mutated = exchange.mutate()
-        .request(r -> r.header(CORRELATION_ID_HEADER, resolved))
-        .build();
-
-    return chain.filter(mutated);
+      final String correlationId = (String) exchange.getAttributes()
+          .get(CorrelationIdFilter.CORRELATION_ID_ATTR);
+      if (correlationId != null) {
+        headers.set(CorrelationIdFilter.CORRELATION_ID_HEADER, correlationId);
+      }
+    }));
   }
 }
