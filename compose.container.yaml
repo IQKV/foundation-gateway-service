@@ -13,7 +13,7 @@ services:
 
 networks:
   gateway-service-network:
-    name: iqkv-gateway-network-dev
+    name: foundation-gateway-network-dev
     external: false
 
 volumes:

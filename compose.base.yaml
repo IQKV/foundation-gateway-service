@@ -5,12 +5,12 @@ services:
       context: .
       dockerfile: ./Dockerfile
       target: builder
-    image: iqkv/iqkv-gateway-service:dev
-    container_name: iqkv-gateway-service-dev
+    image: iqkv/foundation-gateway-service:dev
+    container_name: foundation-gateway-service-dev
     environment:
       # Spring Configuration
       SPRING_PROFILES_ACTIVE: dev
-      SPRING_APPLICATION_NAME: iqkv-gateway-service
+      SPRING_APPLICATION_NAME: foundation-gateway-service
 
       # IAM Service (must be running separately or on shared network)
       IAM_SERVICE_URI: ${IAM_SERVICE_URI:http://host.docker.internal:8080}
@@ -20,8 +20,8 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:*}
 
       # Observability
-      OTEL_SERVICE_NAME: iqkv-gateway-service
-      OTEL_RESOURCE_ATTRIBUTES: service.name=iqkv-gateway-service,service.version=1.0.0,deployment.environment=dev
+      OTEL_SERVICE_NAME: foundation-gateway-service
+      OTEL_RESOURCE_ATTRIBUTES: service.name=foundation-gateway-service,service.version=1.0.0,deployment.environment=dev
 
       # JVM Configuration
       JAVA_OPTS: >-

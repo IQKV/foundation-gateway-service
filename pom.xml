@@ -9,7 +9,7 @@
     </parent>
 
     <groupId>com.iqkv</groupId>
-    <artifactId>iqkv-gateway-service</artifactId>
+    <artifactId>foundation-gateway-service</artifactId>
     <version>0.0.0-SNAPSHOT</version>
     <name>IQ Key Value Gateway Service</name>
     <description>API Gateway with routing, authentication, and rate limiting</description>
