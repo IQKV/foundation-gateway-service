@@ -15,6 +15,6 @@
  */
 
 /**
- * Root package for the Gateway Service — API gateway with routing, authentication, and rate limiting.
+ * Shared utility classes.
  */
-package dev.iqkv.gatewayservice;
+package com.iqkv.gatewayservice.shared.util;

@@ -14,23 +14,7 @@
  * limitations under the License.
  */
 
-package dev.iqkv.gatewayservice;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
 /**
- * Base composite annotation for integration tests.
+ * Security filters, authentication handlers, and related components.
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@SpringBootTest(classes = {GatewayServiceApplication.class})
-@ActiveProfiles("test")
-public @interface IntegrationTest {
-
-}
+package com.iqkv.gatewayservice.infrastructure.security;

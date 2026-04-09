@@ -14,7 +14,23 @@
  * limitations under the License.
  */
 
+package com.iqkv.gatewayservice;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
 /**
- * Common exceptions shared across bounded contexts.
+ * Base composite annotation for integration tests.
  */
-package dev.iqkv.gatewayservice.shared.exception;
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@SpringBootTest(classes = {GatewayServiceApplication.class})
+@ActiveProfiles("test")
+public @interface IntegrationTest {
+
+}

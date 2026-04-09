@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-package dev.iqkv.gatewayservice.infrastructure.config;
+package com.iqkv.gatewayservice;
 
-import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+@SpringBootTest
+@ActiveProfiles("test")
+class GatewayServiceApplicationTests {
 
-/**
- * Gateway-specific configuration properties bound from {@code iqkv.gateway.*}.
- */
-@ConfigurationProperties(prefix = "iqkv.gateway")
-public record GatewayProperties(List<String> publicPaths) {
-
-  public GatewayProperties {
-    if (publicPaths == null) {
-      publicPaths = List.of();
-    }
+  @Test
+  void contextLoads() {
   }
 }

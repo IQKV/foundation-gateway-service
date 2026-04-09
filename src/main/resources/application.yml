@@ -8,7 +8,7 @@ server:
 
 spring:
   application:
-    name: iqkvdev-gateway-service
+    name: iqkv-gateway-service
   output:
     ansi:
       enabled: always

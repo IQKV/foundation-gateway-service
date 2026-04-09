@@ -246,7 +246,7 @@ spring:
         oauth2:
             resourceserver:
                 jwt:
-                    jwk-set-uri: http://iqkvdev-iam-service:8080/.well-known/jwks.json
+                    jwk-set-uri: http://iqkv-iam-service:8080/.well-known/jwks.json
 ```
 
 </details>

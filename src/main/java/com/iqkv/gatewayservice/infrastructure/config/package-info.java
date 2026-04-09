@@ -15,6 +15,6 @@
  */
 
 /**
- * Shared utility classes.
+ * Spring configuration classes (Security, OpenAPI, etc.).
  */
-package dev.iqkv.gatewayservice.shared.util;
+package com.iqkv.gatewayservice.infrastructure.config;

@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
+package com.iqkv.gatewayservice.infrastructure.config;
+
+import java.util.List;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 /**
- * Spring configuration classes (Security, OpenAPI, etc.).
+ * Gateway-specific configuration properties bound from {@code iqkv.gateway.*}.
  */
-package dev.iqkv.gatewayservice.infrastructure.config;
+@ConfigurationProperties(prefix = "iqkv.gateway")
+public record GatewayProperties(List<String> publicPaths) {
+
+  public GatewayProperties {
+    if (publicPaths == null) {
+      publicPaths = List.of();
+    }
+  }
+}

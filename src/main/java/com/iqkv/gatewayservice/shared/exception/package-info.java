@@ -15,6 +15,6 @@
  */
 
 /**
- * Security filters, authentication handlers, and related components.
+ * Common exceptions shared across bounded contexts.
  */
-package dev.iqkv.gatewayservice.infrastructure.security;
+package com.iqkv.gatewayservice.shared.exception;

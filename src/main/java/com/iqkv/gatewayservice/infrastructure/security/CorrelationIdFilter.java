@@ -14,45 +14,45 @@
  * limitations under the License.
  */
 
-package dev.iqkv.gatewayservice.infrastructure.security;
+package com.iqkv.gatewayservice.infrastructure.security;
 
-import java.util.List;
+import java.util.UUID;
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Strips all user/tenant context headers from incoming client requests to prevent
- * identity spoofing. Runs before JWT extraction (order {@code -190}).
+ * Generates or propagates a {@code X-Correlation-ID} header on every request.
+ * Runs first in the filter chain (order {@code -200}).
  */
 @Component
-public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
+public class CorrelationIdFilter implements GlobalFilter, Ordered {
 
-  private static final List<String> PROTECTED_HEADERS = List.of(
-      "X-User-ID",
-      "X-Username",
-      "X-User-Email",
-      "X-User-Authorities",
-      "X-User-Permissions",
-      "X-Tenant-ID",
-      "X-Organization-ID"
-  );
+  public static final String CORRELATION_ID_HEADER = "X-Correlation-ID";
+  public static final String CORRELATION_ID_ATTR = "correlationId";
 
   @Override
   public int getOrder() {
-    return -190;
+    return -200;
   }
 
   @Override
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
-    final ServerHttpRequest sanitized = exchange.getRequest().mutate()
-        .headers(headers -> PROTECTED_HEADERS.forEach(headers::remove))
+    final String correlationId = exchange.getRequest().getHeaders()
+        .getFirst(CORRELATION_ID_HEADER);
+    final String resolved = (correlationId != null && !correlationId.isBlank())
+        ? correlationId : UUID.randomUUID().toString();
+
+    exchange.getAttributes().put(CORRELATION_ID_ATTR, resolved);
+
+    final ServerWebExchange mutated = exchange.mutate()
+        .request(r -> r.header(CORRELATION_ID_HEADER, resolved))
         .build();
-    return chain.filter(exchange.mutate().request(sanitized).build());
+
+    return chain.filter(mutated);
   }
 }

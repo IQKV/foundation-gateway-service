@@ -4,7 +4,7 @@
 
 logging:
   level:
-    dev.iqkv: DEBUG
+    com.iqkv: DEBUG
     org.springframework.cloud.gateway: DEBUG
     org.springframework.security: DEBUG
 
