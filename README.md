@@ -1,216 +1,103 @@
+> ## 🤔 What is this service all about?
+>
+> - Reactive API gateway — the single entry point for the IQ Key Value microservices platform.
+> - Handles JWT validation, header sanitization, user/tenant context propagation, and response security hardening.
+> - Make the project easy to maintain with **8 issue templates**.
+> - Quick-start documentation
+> - Manage issues with **20 issue labels**.
+> - Make _community healthier_ with all the guides like code of conduct, contributing, support, security...
+> - Learn more with the [official GitHub guide on creating repositories from a template](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template).
+
+---
+
 # 🌐 IQ Key Value Gateway Service
 
-> Reactive API gateway providing intelligent routing, JWT authentication, and tenant context propagation across microservices.
-
-## Table of Contents
-
-- [Business Purpose](#business-purpose)
-- [Overview](#overview)
-- [What It Demonstrates](#what-it-demonstrates)
-- [Architecture Patterns](#architecture-patterns)
-- [Technical Highlights](#technical-highlights)
-- [Use Cases Implemented](#use-cases-implemented)
-- [API Examples](#api-examples)
-- [Learning Points](#learning-points)
-- [Adapting for Your Domain](#adapting-for-your-domain)
-- [Integration with Downstream Services](#integration-with-downstream-services)
-- [Deployment Guide](docs/deployment/README.md)
-
-## Business Purpose
-
-A centralized entry point for the IQ Key Value microservices platform that handles:
-
-- **Intelligent Routing** - Dynamic request routing to downstream services with path-based and header-based versioning
-- **Authentication Gateway** - JWT validation and user context propagation to all protected services
-- **Multi-Tenancy** - Tenant context extraction from headers or JWT claims and propagation downstream
-- **Request Transformation** - Header enrichment, correlation ID generation, and context propagation
-- **Observability** - Distributed tracing, Prometheus metrics, and structured logging
+Reactive API gateway providing JWT authentication, header sanitization, user/tenant context propagation, and observability across the IQ Key Value microservices platform.
 
 ## Overview
 
-This is the front door to the IQ Key Value microservices ecosystem. Built on Spring Cloud Gateway with reactive programming, it provides a single entry point for all client requests while handling cross-cutting concerns like authentication, authorization, and observability.
+This is the front door to the IQ Key Value microservices ecosystem. Built on Spring Cloud Gateway with WebFlux, it handles all cross-cutting concerns — authentication, correlation tracking, tenant extraction, and response security hardening — so downstream services receive a clean, enriched request context. For detailed documentation, please refer to the [docs](./docs) directory.
 
-## What It Demonstrates
+## Quick Links
 
-### 🌐 Reactive Gateway Patterns
+- [API Documentation](./docs/api/README.md)
+- [Architecture Overview](./docs/architecture/README.md)
+- [Deployment Guide](./docs/deployment/README.md)
+- [Contributing Guidelines](.github/CONTRIBUTING.md)
 
-- Spring Cloud Gateway with WebFlux for non-blocking I/O
-- Reactive filter chains with ordered execution (`GlobalFilter` + `Ordered`)
-- Reactive JWT validation with OAuth2 Resource Server`
+## Key Features
 
-### 🔐 Authentication & Authorization
+- **Reactive Gateway**: Spring Cloud Gateway with WebFlux — non-blocking I/O throughout the filter chain
+- **JWT Authentication**: RS256 validation via JWK Set URI exposed by the IAM service; public paths bypass auth via `iqkv.gateway.public-paths`
+- **Header Sanitization**: Strips all `X-User-*`, `X-Tenant-ID`, and `X-Organization-ID` headers from incoming requests before JWT processing to prevent identity spoofing
+- **Context Propagation**: Extracts `userId`, `username`, `email`, `authorities`, and `tenant_id` from the validated JWT and forwards them as typed headers to downstream services
+- **Correlation Tracking**: Generates or propagates `X-Correlation-ID` on every request; echoes it back on the response
+- **Response Security Headers**: Injects `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, and `Referrer-Policy` on all responses
+- **Aggregated Swagger UI**: SpringDoc proxies downstream `/api-docs` endpoints through the gateway at `/swagger-ui.html`
+- **Observability**: Prometheus metrics at `/actuator/prometheus`, health probes at `/actuator/health`, structured JSON logging with MDC context
+- **GitHub Integration**: Issue templates, labels, Dependabot, and CI workflows
+- **Quality Tools**: Checkstyle, JaCoCo (80% coverage gate), ArchUnit, oxfmt, Husky git hooks
 
-- JWT validation using RSA256 with JWK Set endpoint
-- User context extraction (userId, username, email, authorities, permissions, organizationId)
-- Authority propagation via headers (X-User-Authorities, X-User-Email, X-User-Permissions, X-Organization-ID)
-- Header sanitization to prevent spoofing attacks (removes all user/tenant context headers from incoming requests)
-- Public path pattern matching (exact and wildcard `/**`)
-- MDC logging with user and tenant context
+## Prerequisites
 
-### 🏢 Multi-Tenancy Support
+- Java 21 (Eclipse Temurin)
+- Maven 3.9+
+- Node.js >= 22.15.0 & pnpm >= 10.33.0
+- Docker & Docker Compose
 
-- Priority-based tenant extraction (JWT claims → X-Tenant-ID header)
-- Tenant context stored in exchange attributes and propagated downstream
-- Tenant ID forwarded via X-Tenant-ID header to all services
+## Quick Start
 
-### 🎯 Observability & Monitoring
+```bash
+# Clone the repository
+git clone https://github.com/IQKV/foundation-gateway-service.git
 
-- Correlation ID generation and propagation across all requests
-- OpenTelemetry distributed tracing with OTLP export
-- Prometheus metrics for gateway operations
-- Structured JSON logging with MDC context (user ID, tenant ID, correlation ID, trace ID)
+# Navigate to project directory
+cd foundation-gateway-service
 
-## Architecture Patterns
+# Install git hooks
+pnpm install
 
-### Reactive Filter Chain
+# Start local dev infrastructure (SonarQube)
+docker compose up -d
 
+# Run the application (requires IAM service on localhost:8080)
+mvn spring-boot:run -Dspring-boot.run.profiles=local -P dev
+# → Gateway API:  http://localhost:8080
+# → Actuator:     http://localhost:8081/actuator/health
+# → Swagger UI:   http://localhost:8080/swagger-ui.html
 ```
-Request Flow:
-1. CorrelationIdFilter          → Generate/extract correlation ID, set MDC context
-2. TenantExtractionFilter       → Extract tenant context from JWT or header
-3. JwtAuthenticationFilter      → Validate JWT and extract user context
-5. ApiVersionRoutingFilter      → Handle API versioning
-7. RequestTransformationFilter  → Enrich headers with user/tenant context
-8. Route to downstream service
-9. ResponseTransformationFilter → Add security headers, remove internal headers
-```
 
-### API Design
+## Filter Chain
 
-- Centralized routing configuration in YAML
-- Path-based and header-based API versioning
-- Public vs protected endpoint segregation
-- Consistent error responses with Problem Details (RFC 7807)
+Filters execute in order. Each `GlobalFilter` is `Ordered` — lower numbers run first on the request path, last on the response path.
 
-## Technical Highlights
+| Order   | Filter                         | Responsibility                                                              |
+| ------- | ------------------------------ | --------------------------------------------------------------------------- |
+| `-200`  | `CorrelationIdFilter`          | Generate or propagate `X-Correlation-ID`; store in exchange attributes      |
+| `-190`  | `HeaderSanitizationFilter`     | Strip `X-User-*`, `X-Tenant-ID`, `X-Organization-ID` from incoming requests |
+| `-100`  | `JwtContextPropagationFilter`  | Extract user/tenant claims from validated JWT; set downstream headers       |
+| `MIN+1` | `ResponseTransformationFilter` | Add security response headers; echo `X-Correlation-ID` to client            |
 
-### Reactive Programming
+Spring Security OAuth2 Resource Server handles JWT signature validation (RS256 via JWKS) before the `JwtContextPropagationFilter` runs.
 
-- Non-blocking I/O with Project Reactor (Mono/Flux)
-- `ReactiveSecurityContextHolder` for JWT validation
-- Reactive filter chains with `flatMap` and `transformDeferred`
+## Downstream Headers
 
-### Security Features
+After the filter chain, downstream services receive the following headers on every authenticated request:
 
-- JWT validation with RSA256 public key via JWK Set URI
-- CORS configuration per environment
-- Security header injection on all responses
-- Internal header removal from responses
-- Route protection with authority-based access control
+| Header               | Source                  | Description                                        |
+| -------------------- | ----------------------- | -------------------------------------------------- |
+| `X-User-ID`          | JWT `userId` claim      | User identifier                                    |
+| `X-Username`         | JWT `username` claim    | Username                                           |
+| `X-User-Email`       | JWT `email` claim       | User email address                                 |
+| `X-User-Authorities` | JWT `authorities` claim | Comma-separated authority list (e.g. `ADMIN,USER`) |
+| `X-Tenant-ID`        | JWT `tenant_id` claim   | Tenant identifier                                  |
+| `X-Correlation-ID`   | Generated / propagated  | Request correlation ID for distributed tracing     |
 
-### Operational Features
+**Security note**: The gateway strips all of these headers from the incoming client request before JWT processing. Only the gateway sets them after successful validation — clients cannot spoof user identity by injecting headers.
 
-- Docker containerization
-- Health checks and actuator endpoints
-- Structured JSON logging
-- Prometheus metrics export
-- OpenAPI documentation via SpringDoc
+## Consuming Gateway Context
 
-## Use Cases Implemented
-
-### Request Routing
-
-- Route requests to downstream services
-
-### Authentication Flow
-
-- Validate JWT tokens from Authorization header
-- Extract user context (userId, username, email, authorities, permissions)
-- Sanitize incoming headers to prevent spoofing (removes X-User-\*, X-Tenant-ID, X-Organization-ID)
-- Propagate user context to downstream services via headers:
-    - `X-User-ID` - User identifier
-    - `X-Username` - Username
-    - `X-User-Email` - User email address
-    - `X-User-Authorities` - Comma-separated list of authorities (e.g., `ADMIN,USER`)
-    - `X-User-Permissions` - Comma-separated list of permissions
-    - `X-Tenant-ID` - Tenant identifier
-    - `X-Organization-ID` - Organization identifier
-- Skip authentication for public paths
-
-### Multi-Tenancy
-
-- Extract tenant from X-Tenant-ID header or JWT claims
-- Tenant context propagation to all downstream services
-
-### Request Transformation
-
-- Add correlation ID to all requests
-- Sanitize incoming headers (remove X-User-\*, X-Tenant-ID, X-Organization-ID to prevent spoofing)
-- Propagate user and tenant context headers
-- Add gateway version header
-- Remove internal headers from requests
-
-### Response Transformation
-
-- Add security headers (X-Content-Type-Options, X-Frame-Options, etc.)
-- Add correlation headers for tracing
-- Remove internal service headers from responses
-- Consistent error response format
-
-## API Examples
-
-### Monitoring Endpoints
-
-- `/actuator/health` - Health status
-- `/actuator/metrics` - Application metrics
-- `/actuator/prometheus` - Prometheus metrics
-- `/swagger-ui.html` - Aggregated API documentation
-
-### Grafana Dashboard
-
-A Grafana dashboard is available at `docs/monitoring/grafana-dashboard.json` providing real-time visibility into:
-
-- Gateway health: uptime, request rate, error rate, p95 latency
-- Routing metrics: request rate by route, response time percentiles (p50/p95/p99)
-- JVM memory: heap/non-heap usage, GC pause time, thread count
-
-The dashboard uses Prometheus as the data source and auto-refreshes every 30 seconds.
-
-## Learning Points
-
-This implementation serves as a reference for:
-
-- Building reactive API gateways with Spring Cloud Gateway
-- JWT validation and user context propagation
-- Feature-based access control at the gateway level
-- Multi-tenant request routing and context isolation
-- Correlation ID tracking across services
-- API versioning strategies (path and header-based)
-- Request/response transformation patterns
-- Reactive programming with Project Reactor
-- Observability in distributed systems (tracing, metrics, structured logging)
-- Type-safe configuration with Java records and Bean Validation
-
-## Adapting for Your Domain
-
-### API Gateway Patterns
-
-- SaaS applications with tenant isolation and feature gating
-- Microservices architectures requiring a unified entry point
-- Mobile app backends with centralized authentication
-- E-commerce platforms with multiple backend services
-
-### Authentication Gateway
-
-- Centralized authentication for microservices
-- Token validation and context propagation
-- Multi-tenant access control
-- Public vs protected endpoint segregation
-
-### Request Transformation
-
-- Header enrichment for downstream services
-- Correlation ID generation for distributed tracing
-- User and tenant context extraction and forwarding
-
-## Integration with Downstream Services
-
-### Consuming Gateway Context
-
-<details>
-<summary>Click to expand gateway context consumption example</summary>
-
-Downstream services receive enriched headers from the gateway:
+Downstream services can read the enriched headers directly from the request:
 
 ```java
 @GetMapping("/protected")
@@ -220,25 +107,14 @@ public ResponseEntity<?> protectedEndpoint(
     @RequestHeader("X-User-Email") String email,
     @RequestHeader("X-User-Authorities") String authorities,
     @RequestHeader("X-Tenant-ID") String tenantId,
-    @RequestHeader("X-Organization-ID") Long organizationId,
     @RequestHeader("X-Correlation-ID") String correlationId
 ) {
     List<String> authorityList = Arrays.asList(authorities.split(","));
-    logger.info("Request from user {} (tenant: {}) correlation: {}", username, tenantId, correlationId);
-    return ResponseEntity.ok(/* response */);
+    // ...
 }
 ```
 
-**Security Note**: The gateway sanitizes all incoming user/tenant context headers before processing. This prevents clients from spoofing user identity by injecting malicious headers. Only the gateway sets these headers after JWT validation.
-
-</details>
-
-### JWT Validation Configuration
-
-<details>
-<summary>Click to expand JWT validation configuration</summary>
-
-Services can validate JWTs independently using the same JWK Set:
+Services that need to validate JWTs independently can point to the same JWKS endpoint:
 
 ```yaml
 spring:
@@ -249,8 +125,92 @@ spring:
                     jwk-set-uri: http://foundation-iam-service:8080/.well-known/jwks.json
 ```
 
-</details>
+## Routes
 
----
+Routes are defined in `application.yml` under `spring.cloud.gateway.routes`:
 
-**Use this as a blueprint** for building reactive API gateways with intelligent routing, JWT authentication, and multi-tenant support in your microservices architecture.
+| Route ID   | URI               | Predicate              | Auth                  |
+| ---------- | ----------------- | ---------------------- | --------------------- |
+| `iam-jwks` | `IAM_SERVICE_URI` | `Path=/.well-known/**` | Public                |
+| `iam-api`  | `IAM_SERVICE_URI` | `Path=/api/v1/iam/**`  | Public (configurable) |
+
+Public path patterns are configured via `iqkv.gateway.public-paths` and enforced by `SecurityConfig` + `GatewayProperties`.
+
+## Environment Variables
+
+| Variable               | Default                                       | Description                    |
+| ---------------------- | --------------------------------------------- | ------------------------------ |
+| `SERVER_PORT`          | `8080`                                        | Gateway API port               |
+| `MANAGEMENT_PORT`      | `8081`                                        | Actuator / management port     |
+| `IAM_SERVICE_URI`      | `http://localhost:8080`                       | Base URI of the IAM service    |
+| `IAM_JWKS_URI`         | `http://localhost:8080/.well-known/jwks.json` | JWK Set URI for JWT validation |
+| `CORS_ALLOWED_ORIGINS` | `*`                                           | Allowed CORS origin patterns   |
+
+## Maven Commands
+
+```bash
+# Build and run all tests (skip Checkstyle during development)
+mvn clean verify -Dcheckstyle.skip=true
+
+# Run tests only
+mvn test -Dcheckstyle.skip=true
+
+# Explicit Checkstyle check
+mvn checkstyle:check
+
+# Coverage report → target/site/jacoco/index.html
+mvn jacoco:report
+
+# Production build
+mvn clean package -P production
+```
+
+## Docker
+
+```bash
+# Build image
+docker build -t iqkv/foundation-gateway-service:latest .
+
+# Run with full platform (gateway + SonarQube)
+docker compose -f compose.container.yaml up -d
+```
+
+The Dockerfile uses a multi-stage build: Maven compiles in `eclipse-temurin:21-jdk-alpine`, the runtime stage uses `eclipse-temurin:21-jre-alpine` with a non-root `appuser` and layered JAR extraction for optimal cache reuse.
+
+## Monitoring
+
+| Endpoint                   | Description                  |
+| -------------------------- | ---------------------------- |
+| `GET /actuator/health`     | Liveness + readiness probes  |
+| `GET /actuator/metrics`    | Application metrics          |
+| `GET /actuator/prometheus` | Prometheus scrape endpoint   |
+| `GET /swagger-ui.html`     | Aggregated API documentation |
+| `GET /api-docs`            | Gateway OpenAPI spec         |
+
+A Grafana dashboard (`docker/grafana/`) provides real-time visibility into gateway health, routing metrics, and JVM memory. It uses Prometheus as the data source and auto-refreshes every 30 seconds.
+
+## Project Structure
+
+```
+src/main/java/com/iqkv/foundation/gatewayservice/
+├── infrastructure/
+│   ├── config/
+│   │   ├── GatewayProperties.java      # @ConfigurationProperties for iqkv.gateway.*
+│   │   └── SecurityConfig.java         # WebFlux security, JWT converter, public paths
+│   └── security/
+│       ├── CorrelationIdFilter.java     # Generate/propagate X-Correlation-ID (order -200)
+│       ├── HeaderSanitizationFilter.java # Strip spoofable headers (order -190)
+│       ├── JwtContextPropagationFilter.java # Enrich downstream headers (order -100)
+│       └── ResponseTransformationFilter.java # Security headers + correlation echo (order MIN+1)
+└── shared/
+    ├── exception/                       # Common exception types
+    └── util/                            # Utility classes
+```
+
+## License
+
+This project is licensed under the Apache License. See the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md).
