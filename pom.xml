@@ -27,7 +27,7 @@
         <maven.gitcommitid.skip>false</maven.gitcommitid.skip>
         <!-- Dependency versions -->
         <spring-cloud.version>2024.0.2</spring-cloud.version>
-        <archunit.version>1.4.1</archunit.version>
+        <archunit.version>1.4.2</archunit.version>
         <testcontainers.version>1.20.6</testcontainers.version>
     </properties>
 
