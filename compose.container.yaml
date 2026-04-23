@@ -1,11 +1,11 @@
-# Full platform run including build phase
-name: dev-gateway-service-full
 services:
+  # Gateway Service - Full platform run including build phase
   gateway-service:
     extends:
       file: compose.base.yaml
       service: gateway-service
 
+  # SonarQube for code quality analysis
   sonar:
     extends:
       file: compose.base.yaml
@@ -19,7 +19,5 @@ networks:
 volumes:
   gateway_logs:
     name: iqkv_gateway_logs_dev
-    driver: local
   gateway_tmp:
     name: iqkv_gateway_tmp_dev
-    driver: local

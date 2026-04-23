@@ -55,14 +55,59 @@ services:
           cpus: "0.25"
           memory: 256M
 
-  # SonarQube for static analysis
+  # SonarQube for code quality analysis
   sonar:
-    container_name: dev-sonarqube
     image: sonarqube:25.3.0.104237-community
+    container_name: foundation-gateway-sonarqube-dev
     environment:
       - SONAR_FORCEAUTHENTICATION=false
     ports:
-      - 127.0.0.1:9000:9000
+      - "127.0.0.1:9001:9000"
+      - "127.0.0.1:9000:9000"
     networks:
       - gateway-service-network
     restart: unless-stopped
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: foundation-gateway-prometheus-dev
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - gateway-service-network
+    restart: unless-stopped
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: foundation-gateway-grafana-dev
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - gateway-service-network
+    restart: unless-stopped
+
+networks:
+  gateway-service-network:
+    driver: bridge
+    name: foundation-gateway-network-dev
+    ipam:
+      config:
+        - subnet: 172.23.0.0/16
+
+volumes:
+  gateway_logs:
+    name: iqkv_gateway_logs_dev
+    driver: local
+  gateway_tmp:
+    name: iqkv_gateway_tmp_dev
+    driver: local

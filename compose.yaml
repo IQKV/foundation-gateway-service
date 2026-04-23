@@ -1,12 +1,35 @@
-# This configuration is intended for development purposes — infrastructure only (no app container)
-name: dev-gateway-service
 services:
+  # Gateway Service - Full platform run including build phase
+  gateway-service:
+    extends:
+      file: compose.base.yaml
+      service: gateway-service
+
+  # SonarQube for code quality analysis
   sonar:
     extends:
       file: compose.base.yaml
       service: sonar
 
+  # Prometheus for metrics collection
+  prometheus:
+    extends:
+      file: compose.base.yaml
+      service: prometheus
+
+  # Grafana for metrics visualization
+  grafana:
+    extends:
+      file: compose.base.yaml
+      service: grafana
+
 networks:
   gateway-service-network:
     name: foundation-gateway-network-dev
     external: false
+
+volumes:
+  gateway_logs:
+    name: iqkv_gateway_logs_dev
+  gateway_tmp:
+    name: iqkv_gateway_tmp_dev
