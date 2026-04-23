@@ -55,7 +55,7 @@ Add a detailed introduction about the service here — what it does, which micro
 
 ## Prerequisites
 
-- Java 21 (Eclipse Temurin)
+- Java 25 (Eclipse Temurin)
 - Maven 3.9+
 - Node.js >= 22.15.0 & pnpm >= 10.33.0
 - Docker & Docker Compose
