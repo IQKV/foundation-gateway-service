@@ -48,6 +48,20 @@ spring:
           predicates:
             - Path=/api/v1/iam/**
 
+        # Billing Service — Stripe webhook (public, secured by Stripe signature verification)
+        - id: billing-webhooks
+          uri: ${BILLING_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/billing/webhooks/**
+
+        # Billing Service — all other API endpoints (/api/v1/billing/**)
+        # Protected: requires valid JWT with TENANT_OWNER authority.
+        # Header sanitization (X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
+        - id: billing-api
+          uri: ${BILLING_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/billing/**
+
 # ---------------------------------------------------------------------------
 # Actuator
 # ---------------------------------------------------------------------------
@@ -76,6 +90,8 @@ springdoc:
     urls:
       - name: IAM Service
         url: ${IAM_SERVICE_URI:http://localhost:8080}/api-docs
+      - name: Billing Service
+        url: ${BILLING_SERVICE_URI:http://localhost:8081}/api-docs
       - name: Gateway
         url: /api-docs
   # Allow swagger-ui to reach downstream api-docs through the gateway
@@ -96,7 +112,8 @@ iqkv:
       - /swagger-ui/**
       - /swagger-ui.html
       - /webjars/**
-
+      # Billing — Stripe webhook is public (secured by Stripe signature verification)
+      - /api/v1/billing/webhooks/**
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"
