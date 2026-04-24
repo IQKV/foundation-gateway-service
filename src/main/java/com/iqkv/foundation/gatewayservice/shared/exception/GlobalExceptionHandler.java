@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
+import org.springframework.web.server.WebExceptionHandler;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
@@ -41,12 +41,12 @@ import reactor.core.publisher.Mono;
  * Reactive global exception handler that maps gateway and security exceptions
  * to RFC 9457 Problem Detail JSON responses.
  *
- * <p>Ordered at {@code -2} to run before Spring Boot's default
- * {@code DefaultErrorWebExceptionHandler} (order {@code -1}).
+ * <p>Ordered at {@code -2} to run before Spring's default
+ * {@code DefaultWebExceptionHandler} (order {@code -1}).
  */
 @Component
 @Order(-2)
-public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
+public class GlobalExceptionHandler implements WebExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
