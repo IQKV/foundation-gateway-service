@@ -18,7 +18,6 @@ package com.iqkv.foundation.gatewayservice.shared.exception;
 
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +110,7 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
   private byte[] serialize(final ProblemDetail problem) {
     try {
       return objectMapper.writeValueAsBytes(problem);
-    } catch (JsonProcessingException e) {
+    } catch (Exception e) {
       log.error("Failed to serialize ProblemDetail", e);
       return ("{\"status\":500,\"detail\":\"An unexpected error occurred\"}")
           .getBytes(StandardCharsets.UTF_8);
