@@ -19,7 +19,7 @@ package com.iqkv.foundation.gatewayservice.shared.exception;
 import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.server.WebExceptionHandler;
@@ -50,9 +50,9 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-  private final ObjectMapper objectMapper;
+  private final JsonMapper objectMapper;
 
-  public GlobalExceptionHandler(final ObjectMapper objectMapper) {
+  public GlobalExceptionHandler(final JsonMapper objectMapper) {
     this.objectMapper = objectMapper;
   }
 
