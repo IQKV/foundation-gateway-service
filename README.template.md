@@ -246,7 +246,9 @@ src/main/java/com/example/gatewayservice/
 
 - **Rendering model**: Reactive — Spring Cloud Gateway + WebFlux, non-blocking I/O end-to-end
 - **Security**: Spring Security OAuth2 Resource Server; JWT RS256 via JWKS; public path list in `GatewayProperties`
-- **Filter chain**: Ordered `GlobalFilter` beans — sanitization → JWT propagation → response hardening
+- **Filter chain**: Ordered `GlobalFilter` beans — sanitization → JWT propagation → tenant context resolution → response hardening
+- **Platform rollout mode**: Controlled via `iqkv.platform.rollout-mode` (`MULTI_TENANT` | `SINGLE_TENANT`); must be identical across IAM, Billing, and Gateway; `PlatformModeGuardFilter` queries IAM `/actuator/info` on startup and every 60 s, comparing `platform.rollout-mode`; readiness set to `REFUSING_TRAFFIC` on mismatch; service fails readiness on invalid/missing local mode
+- **Single-tenant mode**: `TenantContextFilter` auto-injects `X-Tenant-ID` from `iqkv.tenancy.default-tenant-key` when no tenant context is present (covers unauthenticated sign-in and pre-auth requests); `EntitlementSubjectResolver` selects `USER` subject scope; multi-tenant mode preserves existing tenant-selection flow
 - **Configuration**: Type-safe `@ConfigurationProperties` records; environment-variable-driven for container deployments
 - **Observability**: Micrometer + Prometheus; structured JSON logging with MDC; health probes for Kubernetes readiness/liveness
 - **GitHub Integration**: Issue templates, labels, Dependabot, and CI workflows
