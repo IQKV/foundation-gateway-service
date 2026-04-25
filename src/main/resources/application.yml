@@ -102,6 +102,12 @@ springdoc:
 # Gateway-specific properties
 # ---------------------------------------------------------------------------
 iqkv:
+  platform:
+    rollout-mode: ${ROLLOUT_MODE:MULTI_TENANT}  # MULTI_TENANT | SINGLE_TENANT
+  tenancy:
+    default-tenant-key: ${DEFAULT_TENANT_KEY:}  # Must match IAM configuration
+  iam:
+    service-url: ${IAM_SERVICE_URL:http://foundation-iam-service:8080}  # For canonical mode check
   gateway:
     public-paths:
       # IAM auth — temporarily fully public for UI development

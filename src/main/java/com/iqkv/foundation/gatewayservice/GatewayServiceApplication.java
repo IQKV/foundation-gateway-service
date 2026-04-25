@@ -18,13 +18,20 @@ package com.iqkv.foundation.gatewayservice;
 
 import java.util.TimeZone;
 
+import com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties;
 import com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayProperties;
+import com.iqkv.foundation.gatewayservice.infrastructure.config.PlatformConfigurationProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties(GatewayProperties.class)
+@EnableConfigurationProperties({
+    GatewayProperties.class,
+    PlatformConfigurationProperties.class,
+    GatewayConfigurationProperties.Tenancy.class,
+    GatewayConfigurationProperties.Iam.class
+})
 public class GatewayServiceApplication {
 
   public static void main(String[] args) {
