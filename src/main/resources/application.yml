@@ -103,11 +103,20 @@ springdoc:
 # ---------------------------------------------------------------------------
 iqkv:
   platform:
-    rollout-mode: ${ROLLOUT_MODE:MULTI_TENANT}  # MULTI_TENANT | SINGLE_TENANT
+    # Platform-wide operational mode: MULTI_TENANT (default) or SINGLE_TENANT
+    # MULTI_TENANT: Each user signup creates a new tenant with TENANT_OWNER authority
+    # SINGLE_TENANT: All users join a single pre-provisioned default tenant with MEMBER authority
+    # Must match the rollout-mode configured in foundation-iam-service and foundation-gateway-service
+    rollout-mode: ${ROLLOUT_MODE:MULTI_TENANT}
   tenancy:
-    default-tenant-key: ${DEFAULT_TENANT_KEY:}  # Must match IAM configuration
+    # Default tenant key for SINGLE_TENANT mode — must match IAM service configuration
+    # Format: 8-character NanoID using alphabet [a-z0-9]
+    # Example: abc12345
+    default-tenant-key: ${DEFAULT_TENANT_KEY:}
   iam:
-    service-url: ${IAM_SERVICE_URL:http://foundation-iam-service:8080}  # For canonical mode check
+    # IAM service base URL used by PlatformModeGuardFilter to verify canonical rollout mode
+    # The gateway queries IAM's actuator/health endpoint to confirm mode consistency
+    service-url: ${IAM_SERVICE_URL:http://foundation-iam-service:8080}
   gateway:
     public-paths:
       # IAM auth — temporarily fully public for UI development
