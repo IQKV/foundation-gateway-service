@@ -61,7 +61,7 @@ pnpm install
 docker compose up -d
 
 # Run the application (requires IAM service on localhost:8080)
-mvn spring-boot:run -Dspring-boot.run.profiles=local -P dev
+mvn spring-boot:run -Dspring-boot.run.profiles=local -P local
 # → Gateway API:  http://localhost:8080
 # → Actuator:     http://localhost:8081/actuator/health
 # → Swagger UI:   http://localhost:8080/swagger-ui.html
@@ -175,7 +175,7 @@ docker build -t iqkv/foundation-gateway-service:latest .
 docker compose -f compose.container.yaml up -d
 ```
 
-The Dockerfile uses a multi-stage build: Maven compiles in `eclipse-temurin:21-jdk-alpine`, the runtime stage uses `eclipse-temurin:21-jre-alpine` with a non-root `appuser` and layered JAR extraction for optimal cache reuse.
+The Dockerfile uses a multi-stage build: Maven compiles in `eclipse-temurin:25-jdk-alpine`, the runtime stage uses `eclipse-temurin:25-jre-alpine` with a non-root `appuser` and layered JAR extraction for optimal cache reuse.
 
 ## Monitoring
 
