@@ -1,50 +1,24 @@
 # Foundation Gateway Service 🌐
 
-<!-- TEMPLATE: Copy relevant sections into README.md and replace placeholders. Remove guidance blocks when done. -->
-
-<details>
-  <summary><strong>How to use this template (click to expand)</strong></summary>
-
-1. Rename the title to your service name and add a logo if desired.
-2. Add badges (build, coverage, license) under the title.
-3. Fill each section with your actual service content.
-4. Replace placeholder route and environment variable tables with real values.
-5. Update the downstream headers table if JWT claims differ.
-6. Remove this guidance block after customizing.
-
-</details>
-
-- Add your service logo.
-- Write a short introduction — what the gateway does and which platform it belongs to.
-- If you are using badges, add them here.
-
-<details>
-  <summary><strong>Badge examples (optional)</strong></summary>
-
-- Build: `![CI](https://img.shields.io/github/actions/workflow/status/ORG/REPO/build-nodejs-project.yml?label=CI)`
-- Coverage: `![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen)`
-- License: `![License](https://img.shields.io/github/license/ORG/REPO)`
-- Java: `![Java](https://img.shields.io/badge/java-25-blue)`
-- Spring Boot: `![Spring Boot](https://img.shields.io/badge/spring--boot-3.x-brightgreen)`
-
-</details>
+Reactive API gateway — the single entry point for all client traffic in the IQKV platform. Handles JWT validation, header sanitization, user/tenant context propagation, platform mode consistency enforcement, and response security hardening.
 
 ## About
 
-The Foundation Gateway Service is the single entry point for all client traffic in the IQKV platform. It owns:
+The Gateway service owns all cross-cutting concerns so downstream services receive a clean, enriched request context:
 
-- **Authentication enforcement** — validates RS256 JWTs issued by the IAM service; public paths bypass auth
-- **Identity propagation** — extracts user/tenant claims from the validated JWT and forwards them as trusted headers to downstream services, so no downstream service needs to re-parse the token
-- **Security hardening** — strips spoofable context headers from every inbound request before JWT processing; adds security response headers on every reply
+- **Authentication enforcement** — validates RS256 JWTs issued by the IAM service; public paths bypass auth via `iqkv.gateway.public-paths`
+- **Identity propagation** — extracts user/tenant claims from the validated JWT and forwards them as trusted headers to downstream services; no downstream service needs to re-parse the token
+- **Security hardening** — strips spoofable context headers (`X-User-*`, `X-Tenant-ID`, `X-Organization-ID`) from every inbound request before JWT processing; adds security response headers on every reply
 - **Platform mode consistency** — queries IAM's `/actuator/info` on startup and every 60 s to verify `ROLLOUT_MODE` matches; blocks all traffic with `503` if a mismatch is detected
-- **Single-tenant auto-injection** — in `SINGLE_TENANT` mode, injects `X-Tenant-ID` from the configured default tenant key for requests that carry no tenant context (e.g. sign-in)
-- **Aggregated Swagger UI** — proxies OpenAPI specs from IAM and Billing into a single UI
+- **Single-tenant auto-injection** — in `SINGLE_TENANT` mode, injects `X-Tenant-ID` from the configured default tenant key for requests that carry no tenant context
+- **Correlation tracking** — generates or propagates `X-Correlation-ID` on every request; echoes it back on the response
+- **Aggregated Swagger UI** — proxies OpenAPI specs from IAM and Billing into a single UI at `/swagger-ui.html`
 
 ## Quick Links
 
-- [API Documentation](docs/api/README.md)
-- [Architecture Overview](docs/architecture/README.md)
-- [Deployment Guide](docs/deployment/README.md)
+- [API Documentation](./docs/api/README.md)
+- [Architecture Overview](./docs/architecture/README.md)
+- [Deployment Guide](./docs/deployment/README.md)
 - [Contributing Guidelines](.github/CONTRIBUTING.md)
 
 ## Filter Chain
@@ -60,11 +34,13 @@ Filters execute in order. Lower numbers run first on the request path, last on t
 | `-50`     | `TenantContextFilter`          | In `SINGLE_TENANT` mode, inject `X-Tenant-ID` when absent                              |
 | `MIN+1`   | `ResponseTransformationFilter` | Add security response headers; echo `X-Correlation-ID` to client                       |
 
+Spring Security OAuth2 Resource Server handles JWT signature validation (RS256 via JWKS) before the `JwtContextPropagationFilter` runs.
+
 ## Downstream Headers
 
 After the filter chain, every authenticated request to a downstream service carries:
 
-| Header               | Source                                                       | Value                          |
+| Header               | Source                                                       | Description                    |
 | -------------------- | ------------------------------------------------------------ | ------------------------------ |
 | `X-User-ID`          | JWT `userId` claim                                           | User UUID                      |
 | `X-Username`         | JWT `username` claim                                         | Username                       |
@@ -87,8 +63,8 @@ After the filter chain, every authenticated request to a downstream service carr
 ### Public paths (no JWT required)
 
 ```
-/api/v1/iam/**          # All IAM endpoints (auth, signup, password reset, etc.)
-/.well-known/**         # JWKS endpoint
+/api/v1/iam/**               # All IAM endpoints (auth, signup, password reset, etc.)
+/.well-known/**              # JWKS endpoint
 /api/v1/billing/webhooks/**  # Stripe webhook receiver
 /actuator/**
 /swagger-ui/**
@@ -108,8 +84,8 @@ After the filter chain, every authenticated request to a downstream service carr
 
 ```bash
 # Clone the repository
-git clone https://github.com/ORG/REPO.git
-cd REPO
+git clone https://github.com/IQKV/foundation-gateway-service.git
+cd foundation-gateway-service
 
 # Install git hooks
 pnpm install
@@ -117,7 +93,7 @@ pnpm install
 # Start local dev infrastructure
 docker compose up -d
 
-# Run the application
+# Run the application (requires IAM service on localhost:8080)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local -Pdev
 # → Gateway:  http://localhost:8080
 # → Actuator: http://localhost:8081/actuator/health
@@ -138,7 +114,7 @@ docker compose up -d
 | `CORS_ALLOWED_ORIGINS` | `*`                                           | Allowed CORS origin patterns                                                  |
 | `DEFAULT_TENANT_KEY`   | _(empty)_                                     | Default tenant key injected in `SINGLE_TENANT` mode                           |
 
-> Add a row for each additional downstream service URI you route to.
+> Copy `.env.example` to `.env.local` / `.env.uat` / `.env.prd` and fill in values per environment.
 
 ## Maven Commands
 
@@ -163,7 +139,7 @@ docker compose up -d
 
 ```bash
 # Build image
-docker build -t ORG/REPO:latest .
+docker build -t iqkv/foundation-gateway-service:latest .
 
 # Run with full platform stack
 docker compose -f compose.container.yaml up -d
@@ -185,38 +161,27 @@ docker compose -f compose.container.yaml up -d
 src/main/java/com/iqkv/foundation/gatewayservice/
 ├── infrastructure/
 │   ├── config/
-│   │   ├── GatewayProperties.java           # @ConfigurationProperties — public paths, tenancy, IAM URL
-│   │   ├── SecurityConfig.java              # WebFlux security, JWT converter, public path matcher
-│   │   ├── PlatformModeGuardFilter.java     # Startup + periodic rollout mode consistency check
+│   │   ├── GatewayProperties.java            # @ConfigurationProperties — public paths, tenancy, IAM URL
+│   │   ├── SecurityConfig.java               # WebFlux security, JWT converter, public path matcher
+│   │   ├── PlatformModeGuardFilter.java      # Startup + periodic rollout mode consistency check
 │   │   └── PlatformConfigurationProperties.java  # rollout-mode binding
 │   └── security/
-│       ├── CorrelationIdFilter.java         # Generate/propagate X-Correlation-ID (order -200)
-│       ├── HeaderSanitizationFilter.java    # Strip spoofable headers (order -190)
-│       ├── JwtContextPropagationFilter.java # Enrich downstream headers from JWT (order -100)
-│       ├── TenantContextFilter.java         # Auto-inject X-Tenant-ID in single-tenant mode (order -50)
+│       ├── CorrelationIdFilter.java          # Generate/propagate X-Correlation-ID (order -200)
+│       ├── HeaderSanitizationFilter.java     # Strip spoofable headers (order -190)
+│       ├── JwtContextPropagationFilter.java  # Enrich downstream headers from JWT (order -100)
+│       ├── TenantContextFilter.java          # Auto-inject X-Tenant-ID in single-tenant mode (order -50)
 │       └── ResponseTransformationFilter.java # Security headers + correlation echo (order MIN+1)
 └── shared/
-    └── exception/                           # Common exception types, global error handler
+    └── exception/                            # Common exception types, global error handler
 ```
 
----
+## License
 
-<details>
-  <summary><strong>✅ Pre-publish checklist (remove in final README)</strong></summary>
+This project is licensed under the Apache License. See the [LICENSE](LICENSE) file for details.
 
-- [ ] Title updated and logo added
-- [ ] Badges added (CI, coverage, license, Java, Spring Boot)
-- [ ] About section completed
-- [ ] Filter chain table reflects actual filters and their `getOrder()` values
-- [ ] Downstream headers table matches JWT claims and propagation filter
-- [ ] Routes table reflects actual `application.yml` routes
-- [ ] Public paths list is accurate
-- [ ] Environment variables table is complete
-- [ ] Project structure tree updated if packages differ
-- [ ] Links verified (docs, external resources)
-- [ ] Guidance blocks removed before publishing
+## Contributing
 
-</details>
+Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md).
 
 ---
 
@@ -232,4 +197,4 @@ src/main/java/com/iqkv/foundation/gatewayservice/
 - **GitHub Integration**: Issue templates, labels, Dependabot, and CI workflows
 - **Quality Tools**: Checkstyle, JaCoCo (80% gate), ArchUnit, commit convention enforcement
 
-> See [AGENTS.md](AGENTS.md) for detailed project structure, DDD patterns, and AI agent guidelines.
+> See [AGENTS.md](AGENTS.md) for repository structure, DDD patterns, and agent guidelines.

@@ -129,22 +129,25 @@ spring:
 
 Routes are defined in `application.yml` under `spring.cloud.gateway.routes`:
 
-| Route ID   | URI               | Predicate              | Auth                  |
-| ---------- | ----------------- | ---------------------- | --------------------- |
-| `iam-jwks` | `IAM_SERVICE_URI` | `Path=/.well-known/**` | Public                |
-| `iam-api`  | `IAM_SERVICE_URI` | `Path=/api/v1/iam/**`  | Public (configurable) |
+| Route ID           | URI                   | Predicate                          | Auth                      | Description                              |
+| ------------------ | --------------------- | ---------------------------------- | ------------------------- | ---------------------------------------- |
+| `iam-jwks`         | `IAM_SERVICE_URI`     | `Path=/.well-known/**`             | Public                    | JWKS endpoint for JWT validation         |
+| `iam-api`          | `IAM_SERVICE_URI`     | `Path=/api/v1/iam/**`              | Public (configurable)     | All IAM API endpoints                    |
+| `billing-webhooks` | `BILLING_SERVICE_URI` | `Path=/api/v1/billing/webhooks/**` | Public (Stripe signature) | Stripe webhook ingestion                 |
+| `billing-api`      | `BILLING_SERVICE_URI` | `Path=/api/v1/billing/**`          | Protected                 | All billing API endpoints (requires JWT) |
 
 Public path patterns are configured via `iqkv.gateway.public-paths` and enforced by `SecurityConfig` + `GatewayProperties`.
 
 ## Environment Variables
 
-| Variable               | Default                                       | Description                    |
-| ---------------------- | --------------------------------------------- | ------------------------------ |
-| `SERVER_PORT`          | `8080`                                        | Gateway API port               |
-| `MANAGEMENT_PORT`      | `8081`                                        | Actuator / management port     |
-| `IAM_SERVICE_URI`      | `http://localhost:8080`                       | Base URI of the IAM service    |
-| `IAM_JWKS_URI`         | `http://localhost:8080/.well-known/jwks.json` | JWK Set URI for JWT validation |
-| `CORS_ALLOWED_ORIGINS` | `*`                                           | Allowed CORS origin patterns   |
+| Variable               | Default                                       | Description                     |
+| ---------------------- | --------------------------------------------- | ------------------------------- |
+| `SERVER_PORT`          | `8080`                                        | Gateway API port                |
+| `MANAGEMENT_PORT`      | `8081`                                        | Actuator / management port      |
+| `IAM_SERVICE_URI`      | `http://localhost:8080`                       | Base URI of the IAM service     |
+| `IAM_JWKS_URI`         | `http://localhost:8080/.well-known/jwks.json` | JWK Set URI for JWT validation  |
+| `BILLING_SERVICE_URI`  | `http://localhost:8081`                       | Base URI of the Billing service |
+| `CORS_ALLOWED_ORIGINS` | `*`                                           | Allowed CORS origin patterns    |
 
 ## Maven Commands
 
