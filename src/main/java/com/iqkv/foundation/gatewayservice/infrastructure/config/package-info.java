@@ -17,4 +17,5 @@
 /**
  * Spring configuration classes (Security, OpenAPI, etc.).
  */
+
 package com.iqkv.foundation.gatewayservice.infrastructure.config;

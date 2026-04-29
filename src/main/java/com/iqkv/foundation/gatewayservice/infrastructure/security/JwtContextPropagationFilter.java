@@ -17,7 +17,6 @@
 package com.iqkv.foundation.gatewayservice.infrastructure.security;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -81,7 +80,7 @@ public class JwtContextPropagationFilter implements GlobalFilter, Ordered {
   }
 
   private void setIfPresent(final org.springframework.http.HttpHeaders headers,
-                             final String name, final String value) {
+                            final String name, final String value) {
     if (value != null && !value.isBlank()) {
       headers.set(name, value);
     }

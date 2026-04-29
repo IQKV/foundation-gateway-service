@@ -119,7 +119,7 @@ public class TenantContextFilter implements GlobalFilter, Ordered, TenantContext
 
     log.debug(
         "event=tenant_context_injected service=gateway-service "
-            + "tenant_key={} path={} mode={}",
+        + "tenant_key={} path={} mode={}",
         tenantKey,
         exchange.getRequest().getPath(),
         platformConfig.rolloutMode());
@@ -175,8 +175,8 @@ public class TenantContextFilter implements GlobalFilter, Ordered, TenantContext
     if (defaultKey == null || defaultKey.isBlank()) {
       log.warn(
           "event=tenant_context_missing_default service=gateway-service "
-              + "path={} message=\"Single-tenant mode active but iqkv.tenancy.default-tenant-key "
-              + "is not configured; forwarding request without X-Tenant-ID\"",
+          + "path={} message=\"Single-tenant mode active but iqkv.tenancy.default-tenant-key "
+          + "is not configured; forwarding request without X-Tenant-ID\"",
           exchange.getRequest().getPath());
       return Optional.empty();
     }

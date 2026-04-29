@@ -42,8 +42,8 @@ public interface TenantContextResolutionPolicy {
    * @param exchange the current server web exchange (headers already sanitized and
    *                 JWT-propagated headers already applied)
    * @return the resolved tenant key, or {@link Optional#empty()} when no tenant
-   *         context is available and none should be injected (multi-tenant mode
-   *         without an existing header)
+   * context is available and none should be injected (multi-tenant mode
+   * without an existing header)
    */
   Optional<String> resolveTenantContext(ServerWebExchange exchange);
 }

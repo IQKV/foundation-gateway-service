@@ -16,7 +16,6 @@
 
 package com.iqkv.foundation.gatewayservice.infrastructure.config;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -62,10 +61,10 @@ public class SecurityConfig {
             .accessDeniedHandler(new HttpStatusServerAccessDeniedHandler(HttpStatus.FORBIDDEN))
         )
         .authorizeExchange(auth -> {
-            if (publicPaths.length > 0) {
-              auth.pathMatchers(publicPaths).permitAll();
-            }
-            auth.anyExchange().authenticated();
+          if (publicPaths.length > 0) {
+            auth.pathMatchers(publicPaths).permitAll();
+          }
+          auth.anyExchange().authenticated();
         })
         .oauth2ResourceServer(oauth2 -> oauth2
             .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

@@ -16,11 +16,10 @@
 
 package com.iqkv.foundation.gatewayservice.infrastructure.config;
 
+import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import jakarta.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,13 +118,13 @@ public class PlatformModeGuardFilter implements GlobalFilter, Ordered {
     if (modeMismatchDetected.get()) {
       log.warn(
           "event=traffic_blocked_mode_mismatch service=gateway-service "
-              + "local_mode={} path={}",
+          + "local_mode={} path={}",
           platformConfig.rolloutMode(),
           exchange.getRequest().getPath());
       exchange.getResponse().setStatusCode(HttpStatus.SERVICE_UNAVAILABLE);
       exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
       final byte[] body = ("{\"error\":\"Service unavailable: platform mode mismatch detected. "
-          + "Check service configuration.\"}").getBytes();
+                           + "Check service configuration.\"}").getBytes();
       final var buffer = exchange.getResponse().bufferFactory().wrap(body);
       return exchange.getResponse().writeWith(Mono.just(buffer));
     }
@@ -144,7 +143,7 @@ public class PlatformModeGuardFilter implements GlobalFilter, Ordered {
   public void validateOnStartup() {
     log.info(
         "event=platform_mode_guard_startup service=gateway-service "
-            + "local_mode={} iam_url={}",
+        + "local_mode={} iam_url={}",
         platformConfig.rolloutMode(),
         iamProperties.getServiceUrl());
     performModeCheck();
@@ -178,7 +177,8 @@ public class PlatformModeGuardFilter implements GlobalFilter, Ordered {
     webClient.get()
         .uri(iamInfoUrl)
         .retrieve()
-        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+        })
         .timeout(IAM_REQUEST_TIMEOUT)
         .subscribe(
             body -> handleIamInfoResponse(body),
@@ -193,8 +193,8 @@ public class PlatformModeGuardFilter implements GlobalFilter, Ordered {
     if (canonicalMode == null) {
       log.warn(
           "event=platform_mode_canonical_missing service=gateway-service "
-              + "iam_url={} message=\"IAM /actuator/info did not contain platform.rollout-mode; "
-              + "skipping consistency check\"",
+          + "iam_url={} message=\"IAM /actuator/info did not contain platform.rollout-mode; "
+          + "skipping consistency check\"",
           iamProperties.getServiceUrl());
       return;
     }
@@ -204,8 +204,8 @@ public class PlatformModeGuardFilter implements GlobalFilter, Ordered {
     if (!localMode.equalsIgnoreCase(canonicalMode)) {
       log.error(
           "event=platform_mode_mismatch service=gateway-service "
-              + "local_mode={} canonical_mode={} "
-              + "message=\"Rollout mode mismatch detected; setting readiness to DOWN and blocking traffic\"",
+          + "local_mode={} canonical_mode={} "
+          + "message=\"Rollout mode mismatch detected; setting readiness to DOWN and blocking traffic\"",
           localMode,
           canonicalMode);
       modeMismatchDetected.set(true);
@@ -215,15 +215,15 @@ public class PlatformModeGuardFilter implements GlobalFilter, Ordered {
         // Mismatch was previously detected but is now resolved — restore readiness.
         log.info(
             "event=platform_mode_mismatch_resolved service=gateway-service "
-                + "local_mode={} canonical_mode={} "
-                + "message=\"Mode mismatch resolved; restoring readiness to ACCEPTING_TRAFFIC\"",
+            + "local_mode={} canonical_mode={} "
+            + "message=\"Mode mismatch resolved; restoring readiness to ACCEPTING_TRAFFIC\"",
             localMode,
             canonicalMode);
         AvailabilityChangeEvent.publish(applicationContext, ReadinessState.ACCEPTING_TRAFFIC);
       } else {
         log.debug(
             "event=platform_mode_consistent service=gateway-service "
-                + "local_mode={} canonical_mode={}",
+            + "local_mode={} canonical_mode={}",
             localMode,
             canonicalMode);
       }
@@ -233,8 +233,8 @@ public class PlatformModeGuardFilter implements GlobalFilter, Ordered {
   private void handleIamUnreachable(final Throwable error) {
     log.warn(
         "event=platform_mode_iam_unreachable service=gateway-service "
-            + "iam_url={} error=\"{}\" "
-            + "message=\"IAM service unreachable during mode check; allowing traffic (fail-open)\"",
+        + "iam_url={} error=\"{}\" "
+        + "message=\"IAM service unreachable during mode check; allowing traffic (fail-open)\"",
         iamProperties.getServiceUrl(),
         error.getMessage());
     // Fail-open: do not block traffic on transient IAM unavailability.

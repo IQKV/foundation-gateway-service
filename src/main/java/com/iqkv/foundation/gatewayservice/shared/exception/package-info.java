@@ -17,4 +17,5 @@
 /**
  * Common exceptions shared across bounded contexts.
  */
+
 package com.iqkv.foundation.gatewayservice.shared.exception;

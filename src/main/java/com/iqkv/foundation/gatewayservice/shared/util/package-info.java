@@ -17,4 +17,5 @@
 /**
  * Shared utility classes.
  */
+
 package com.iqkv.foundation.gatewayservice.shared.util;
