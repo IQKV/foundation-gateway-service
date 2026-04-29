@@ -5,11 +5,11 @@ services:
       context: .
       dockerfile: ./Dockerfile
       target: builder
-    image: iqkv/foundation-gateway-service:dev
+    image: iqkv/foundation-gateway-service:local
     container_name: foundation-gateway-service-dev
     environment:
       # Spring Configuration
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: local
       SPRING_APPLICATION_NAME: foundation-gateway-service
 
       # IAM Service (must be running separately or on shared network)
