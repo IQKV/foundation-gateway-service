@@ -115,8 +115,10 @@ iqkv:
     default-tenant-key: ${DEFAULT_TENANT_KEY:}
   iam:
     # IAM service base URL used by PlatformModeGuardFilter to verify canonical rollout mode
-    # The gateway queries IAM's actuator/health endpoint to confirm mode consistency
-    service-url: ${IAM_SERVICE_URL:http://foundation-iam-service:8080}
+    # The gateway queries IAM's /actuator/info endpoint — must point to the management port (8081),
+    # NOT the main API port (80/8080).
+    # Overridden in K8s via IQKV_IAM_SERVICE_URL env var (Spring Boot relaxed binding).
+    service-url: ${IQKV_IAM_SERVICE_URL:http://localhost:8081}
   gateway:
     public-paths:
       # IAM auth — temporarily fully public for UI development
