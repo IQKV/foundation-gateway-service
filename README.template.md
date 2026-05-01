@@ -1,6 +1,6 @@
 # Foundation Gateway Service 🌐
 
-Reactive API gateway — the single entry point for all client traffic in the IQKV platform. Handles JWT validation, header sanitization, user/tenant context propagation, platform mode consistency enforcement, and response security hardening.
+Reactive API gateway — the single entry point for all client traffic in the Key Value Platform. Handles JWT validation, header sanitization, user/tenant context propagation, platform mode consistency enforcement, and response security hardening.
 
 ## About
 
