@@ -127,7 +127,7 @@ spring:
 
 ## Routes
 
-Routes are defined in `application.yml` under `spring.cloud.gateway.routes`:
+Routes are defined in `application.yml` under `spring.cloud.gateway.server.webflux.routes`:
 
 | Route ID           | URI                   | Predicate                          | Auth                      | Description                              |
 | ------------------ | --------------------- | ---------------------------------- | ------------------------- | ---------------------------------------- |
