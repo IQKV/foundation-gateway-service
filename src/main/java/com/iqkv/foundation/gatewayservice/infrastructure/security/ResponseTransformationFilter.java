@@ -38,7 +38,7 @@ public class ResponseTransformationFilter implements GlobalFilter, Ordered {
 
   @Override
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
-    return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+    exchange.getResponse().beforeCommit(() -> Mono.fromRunnable(() -> {
       final HttpHeaders headers = exchange.getResponse().getHeaders();
       headers.set("X-Content-Type-Options", "nosniff");
       headers.set("X-Frame-Options", "DENY");
@@ -51,5 +51,6 @@ public class ResponseTransformationFilter implements GlobalFilter, Ordered {
         headers.set(CorrelationIdFilter.CORRELATION_ID_HEADER, correlationId);
       }
     }));
+    return chain.filter(exchange);
   }
 }
