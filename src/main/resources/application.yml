@@ -19,54 +19,57 @@ spring:
           jwk-set-uri: ${IAM_JWKS_URI:http://localhost:8080/.well-known/jwks.json}
   cloud:
     gateway:
-      # ---------------------------------------------------------------------------
-      # Global CORS
-      # ---------------------------------------------------------------------------
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowed-origin-patterns: "${CORS_ALLOWED_ORIGINS:*}"
-            allowed-methods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowed-headers: "*"
-            allow-credentials: true
-            max-age: 3600
-      # ---------------------------------------------------------------------------
-      # Routes
-      # ---------------------------------------------------------------------------
-      routes:
-        # IAM Service — JWKS (public, no auth)
-        - id: iam-jwks
-          uri: ${IAM_SERVICE_URI:http://localhost:8080}
-          predicates:
-            - Path=/.well-known/**
+      server:
+        webflux:
+          # ---------------------------------------------------------------------------
+          # Global CORS
+          # ---------------------------------------------------------------------------
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowed-origin-patterns: "${CORS_ALLOWED_ORIGINS:*}"
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowed-headers: "*"
+                allow-credentials: true
+                max-age: 3600
+          # ---------------------------------------------------------------------------
+          # Routes
+          # ---------------------------------------------------------------------------
+          routes:
+            # IAM Service — JWKS (public, no auth)
+            - id: iam-jwks
+              uri: ${IAM_SERVICE_URI:http://localhost:8080}
+              predicates:
+                - Path=/.well-known/**
 
-        # IAM Service — all API endpoints (/api/v1/iam/**)
-        # Public vs protected distinction is enforced by SecurityConfig + GatewayProperties.
-        # Header sanitization (X-User-*, X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
-        - id: iam-api
-          uri: ${IAM_SERVICE_URI:http://localhost:8080}
-          predicates:
-            - Path=/api/v1/iam/**
+            # IAM Service — all API endpoints (/api/v1/iam/**)
+            # Public vs protected distinction is enforced by SecurityConfig + GatewayProperties.
+            # Header sanitization (X-User-*, X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
+            - id: iam-api
+              uri: ${IAM_SERVICE_URI:http://localhost:8080}
+              predicates:
+                - Path=/api/v1/iam/**
 
-        # Billing Service — Stripe webhook (public, secured by Stripe signature verification)
-        - id: billing-webhooks
-          uri: ${BILLING_SERVICE_URI:http://localhost:8081}
-          predicates:
-            - Path=/api/v1/billing/webhooks/**
+            # Billing Service — Stripe webhook (public, secured by Stripe signature verification)
+            - id: billing-webhooks
+              uri: ${BILLING_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/billing/webhooks/**
 
-        # Billing Service — all other API endpoints (/api/v1/billing/**)
-        # Protected: requires valid JWT with TENANT_OWNER authority.
-        # Header sanitization (X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
-        - id: billing-api
-          uri: ${BILLING_SERVICE_URI:http://localhost:8081}
-          predicates:
-            - Path=/api/v1/billing/**
+            # Billing Service — all other API endpoints (/api/v1/billing/**)
+            # Protected: requires valid JWT with TENANT_OWNER authority.
+            # Header sanitization (X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
+            - id: billing-api
+              uri: ${BILLING_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/billing/**
 
 # ---------------------------------------------------------------------------
 # Actuator
