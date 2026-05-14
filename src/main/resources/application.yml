@@ -30,7 +30,7 @@ spring:
                 allowedOriginPatterns: "${CORS_ALLOWED_ORIGINS:*}"
                 allowedMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
                 allowedHeaders: ["*"]
-                allowCredentials: false
+                allowCredentials: true
                 maxAge: 3600
           # ---------------------------------------------------------------------------
           # Routes
