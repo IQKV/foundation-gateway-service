@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -63,6 +64,9 @@ public class SecurityConfig {
             .accessDeniedHandler(new HttpStatusServerAccessDeniedHandler(HttpStatus.FORBIDDEN))
         )
         .authorizeExchange(auth -> {
+          // CORS preflight requests must be permitted without authentication.
+          // Browsers never send credentials on OPTIONS requests.
+          auth.pathMatchers(HttpMethod.OPTIONS, "/**").permitAll();
           if (publicPaths.length > 0) {
             auth.pathMatchers(publicPaths).permitAll();
           }
