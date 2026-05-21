@@ -34,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebExceptionHandler;
 import reactor.core.publisher.Mono;
+import com.iqkv.foundation.gatewayservice.infrastructure.monitoring.GatewayMetrics;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -50,9 +51,12 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   private final JsonMapper objectMapper;
+  private final GatewayMetrics metrics;
 
-  public GlobalExceptionHandler(final JsonMapper objectMapper) {
+  public GlobalExceptionHandler(final JsonMapper objectMapper,
+                                final GatewayMetrics metrics) {
     this.objectMapper = objectMapper;
+    this.metrics = metrics;
   }
 
   @Override
@@ -75,26 +79,32 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
     }
     if (ex instanceof DownstreamServiceException e) {
       log.error("Downstream service error: {}", e.getMessage(), e);
+      metrics.recordDownstreamError("unknown", HttpStatus.BAD_GATEWAY.value());
       return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, e.getMessage());
     }
     if (ex instanceof JwtClaimExtractionException e) {
       log.warn("JWT claim extraction failed: {}", e.getMessage());
+      metrics.recordAuthFailure("jwt_extraction_failed");
       return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
     if (ex instanceof RateLimitExceededException e) {
       log.warn("Rate limit exceeded: {}", e.getMessage());
+      metrics.recordRateLimitHit("unknown");
       return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
     }
     if (ex instanceof InvalidBearerTokenException e) {
       log.warn("Invalid bearer token: {}", e.getMessage());
+      metrics.recordAuthFailure("invalid_token");
       return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
     }
     if (ex instanceof AuthenticationException e) {
       log.warn("Authentication failed: {}", e.getMessage());
+      metrics.recordAuthFailure("authentication_required");
       return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Authentication required");
     }
     if (ex instanceof AccessDeniedException e) {
       log.warn("Access denied: {}", e.getMessage());
+      metrics.recordAuthFailure("access_denied");
       return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
     }
     if (ex instanceof ResponseStatusException e) {

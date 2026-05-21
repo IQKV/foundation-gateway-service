@@ -33,6 +33,7 @@ This is the front door to the IQ Key Value microservices ecosystem. Built on Spr
 - **Context Propagation**: Extracts `userId`, `username`, `email`, `authorities`, and `tenant_id` from the validated JWT and forwards them as typed headers to downstream services
 - **Correlation Tracking**: Generates or propagates `X-Correlation-ID` on every request; echoes it back on the response
 - **Response Security Headers**: Injects `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, and `Referrer-Policy` on all responses
+- **Custom Gateway Metrics**: Detailed tracking of request rates, latencies, and errors by `route_id` and `tenant_id`
 - **Aggregated Swagger UI**: SpringDoc proxies downstream `/api-docs` endpoints through the gateway at `/swagger-ui.html`
 - **Observability**: Prometheus metrics at `/actuator/prometheus`, health probes at `/actuator/health`, structured JSON logging with MDC context
 - **GitHub Integration**: Issue templates, labels, Dependabot, and CI workflows
@@ -73,6 +74,7 @@ Filters execute in order. Each `GlobalFilter` is `Ordered` — lower numbers run
 
 | Order   | Filter                         | Responsibility                                                              |
 | ------- | ------------------------------ | --------------------------------------------------------------------------- |
+| `-201`  | `MonitoringFilter`             | Record request metrics (rate, duration, status, tenant)                     |
 | `-200`  | `CorrelationIdFilter`          | Generate or propagate `X-Correlation-ID`; store in exchange attributes      |
 | `-190`  | `HeaderSanitizationFilter`     | Strip `X-User-*`, `X-Tenant-ID`, `X-Organization-ID` from incoming requests |
 | `-100`  | `JwtContextPropagationFilter`  | Extract user/tenant claims from validated JWT; set downstream headers       |

@@ -12,6 +12,7 @@ The Gateway service owns all cross-cutting concerns so downstream services recei
 - **Platform mode consistency** — queries IAM's `/actuator/info` on startup and every 60 s to verify `ROLLOUT_MODE` matches; blocks all traffic with `503` if a mismatch is detected
 - **Single-tenant auto-injection** — in `SINGLE_TENANT` mode, injects `X-Tenant-ID` from the configured default tenant key for requests that carry no tenant context
 - **Correlation tracking** — generates or propagates `X-Correlation-ID` on every request; echoes it back on the response
+- **Custom Observability** — detailed tracking of request rates, latencies, and security failures by `route_id` and `tenant_id` via Micrometer and Prometheus
 - **Aggregated Swagger UI** — proxies OpenAPI specs from IAM and Billing into a single UI at `/swagger-ui.html`
 
 ## Quick Links
@@ -28,6 +29,7 @@ Filters execute in order. Lower numbers run first on the request path, last on t
 | Order     | Filter                         | Responsibility                                                                         |
 | --------- | ------------------------------ | -------------------------------------------------------------------------------------- |
 | `HIGHEST` | `PlatformModeGuardFilter`      | Block all traffic with `503` if rollout mode mismatches IAM                            |
+| `-201`    | `MonitoringFilter`             | Record request metrics (rate, duration, status, tenant)                                |
 | `-200`    | `CorrelationIdFilter`          | Generate or propagate `X-Correlation-ID`                                               |
 | `-190`    | `HeaderSanitizationFilter`     | Strip spoofable context headers (`X-User-*`, `X-Tenant-ID`, etc.) from client requests |
 | `-100`    | `JwtContextPropagationFilter`  | Extract JWT claims; set downstream headers                                             |
@@ -165,6 +167,9 @@ src/main/java/com/iqkv/foundation/gatewayservice/
 │   │   ├── SecurityConfig.java               # WebFlux security, JWT converter, public path matcher
 │   │   ├── PlatformModeGuardFilter.java      # Startup + periodic rollout mode consistency check
 │   │   └── PlatformConfigurationProperties.java  # rollout-mode binding
+│   ├── monitoring/
+│   │   ├── GatewayMetrics.java               # Central component for custom Micrometer metrics
+│   │   └── MonitoringFilter.java              # Global filter for recording request metrics (order -201)
 │   └── security/
 │       ├── CorrelationIdFilter.java          # Generate/propagate X-Correlation-ID (order -200)
 │       ├── HeaderSanitizationFilter.java     # Strip spoofable headers (order -190)
