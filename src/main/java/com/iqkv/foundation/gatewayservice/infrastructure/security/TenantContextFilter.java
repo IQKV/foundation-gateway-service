@@ -56,8 +56,6 @@ import reactor.core.publisher.Mono;
  *
  * <p>If no default tenant key is configured in single-tenant mode a warning is logged
  * and the request is forwarded without the header.
- *
- * <p>Requirements: 8.1, 8.2, 8.3, 16.5, 16.6
  */
 @Component
 public class TenantContextFilter implements GlobalFilter, Ordered, TenantContextResolutionPolicy {

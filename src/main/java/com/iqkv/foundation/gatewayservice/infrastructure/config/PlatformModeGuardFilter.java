@@ -58,8 +58,6 @@ import reactor.core.publisher.Mono;
  * The next scheduled re-validation will retry the check.
  *
  * <p>Runs with {@link Ordered#HIGHEST_PRECEDENCE} to execute before all other filters.
- *
- * <p>Requirements: 2.2, 2.3, 2.4, 14.3
  */
 @Component
 public class PlatformModeGuardFilter implements GlobalFilter, Ordered {

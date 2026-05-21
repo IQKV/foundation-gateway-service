@@ -31,8 +31,6 @@ import org.springframework.web.server.ServerWebExchange;
  * <p>In {@code SINGLE_TENANT} mode the policy auto-injects the configured default
  * tenant key whenever no tenant context is already present, including for
  * unauthenticated sign-in requests.
- *
- * <p>Requirements: 8.1, 8.2, 8.3, 16.6
  */
 public interface TenantContextResolutionPolicy {
 
