@@ -44,9 +44,9 @@ services:
       SPRING_PROFILES_ACTIVE: local
       DB_HOST: postgres-iam
       DB_PORT: 5432
-      DB_NAME: iam
-      DB_USERNAME: svc_iam_dba
-      DB_PASSWORD: svc_iam_dba
+      DB_NAME: billing
+      DB_USERNAME: svc_billing_dba
+      DB_PASSWORD: svc_billing_dba
       RABBITMQ_HOST: rabbitmq-iam
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: svc_iam_rmq
