@@ -90,10 +90,10 @@ cd foundation-gateway-service
 # Install git hooks
 pnpm install
 
-# Start local dev infrastructure
+# Start local dev infrastructure (Postgres, RabbitMQ, MailHog, etc.)
 docker compose up -d
 
-# Run the application (requires IAM service on localhost:8080)
+# Run the application (requires IAM service on localhost:8082)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local -Pdev
 # → Gateway:  http://localhost:8080
 # → Actuator: http://localhost:8081/actuator/health
@@ -107,10 +107,10 @@ docker compose up -d
 | `ROLLOUT_MODE`         | `MULTI_TENANT`                                | Platform mode: `MULTI_TENANT` or `SINGLE_TENANT` — must match IAM and Billing |
 | `SERVER_PORT`          | `8080`                                        | Gateway API port                                                              |
 | `MANAGEMENT_PORT`      | `8081`                                        | Actuator / management port                                                    |
-| `IAM_SERVICE_URI`      | `http://localhost:8080`                       | IAM service base URI (for routing)                                            |
-| `IAM_SERVICE_URL`      | `http://foundation-iam-service:8080`          | IAM service URL for platform mode guard check                                 |
-| `IAM_JWKS_URI`         | `http://localhost:8080/.well-known/jwks.json` | JWK Set URI for JWT validation                                                |
-| `BILLING_SERVICE_URI`  | `http://localhost:8081`                       | Billing service base URI (for routing)                                        |
+| `IAM_SERVICE_URI`      | `http://localhost:8082`                       | IAM service base URI (for routing)                                            |
+| `IQKV_IAM_SERVICE_URL` | `http://localhost:8083`                       | IAM service URL for platform mode guard check                                 |
+| `IAM_JWKS_URI`         | `http://localhost:8082/.well-known/jwks.json` | JWK Set URI for JWT validation                                                |
+| `BILLING_SERVICE_URI`  | `http://localhost:8084`                       | Billing service base URI (for routing)                                        |
 | `CORS_ALLOWED_ORIGINS` | `*`                                           | Allowed CORS origin patterns                                                  |
 | `DEFAULT_TENANT_KEY`   | _(empty)_                                     | Default tenant key injected in `SINGLE_TENANT` mode                           |
 

@@ -13,4 +13,14 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${IAM_JWKS_URI:http://localhost:8080/.well-known/jwks.json}
+          jwk-set-uri: ${IAM_JWKS_URI:http://localhost:8082/.well-known/jwks.json}
+
+# ===================================================================
+# Local Development Service URIs
+# ===================================================================
+iam-service-uri: ${IAM_SERVICE_URI:http://localhost:8082}
+billing-service-uri: ${BILLING_SERVICE_URI:http://localhost:8084}
+
+iqkv:
+  iam:
+    service-url: ${IQKV_IAM_SERVICE_URL:http://localhost:8083}
