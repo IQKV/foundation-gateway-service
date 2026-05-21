@@ -43,6 +43,14 @@ spring:
           # Routes
           # ---------------------------------------------------------------------------
           routes:
+            # IAM Service — OpenAPI docs
+            - id: iam-api-docs
+              uri: ${IAM_SERVICE_URI:http://localhost:8080}
+              predicates:
+                - Path=/api/v1/iam/api-docs
+              filters:
+                - RewritePath=/api/v1/iam/api-docs, /api-docs
+
             # IAM Service — JWKS (public, no auth)
             - id: iam-jwks
               uri: ${IAM_SERVICE_URI:http://localhost:8080}
@@ -56,6 +64,14 @@ spring:
               uri: ${IAM_SERVICE_URI:http://localhost:8080}
               predicates:
                 - Path=/api/v1/iam/**
+
+            # Billing Service — OpenAPI docs
+            - id: billing-api-docs
+              uri: ${BILLING_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/billing/api-docs
+              filters:
+                - RewritePath=/api/v1/billing/api-docs, /api-docs
 
             # Billing Service — Stripe webhook (public, secured by Stripe signature verification)
             - id: billing-webhooks
@@ -98,9 +114,9 @@ springdoc:
     # Aggregate specs from downstream services
     urls:
       - name: IAM Service
-        url: ${IAM_SERVICE_URI:http://localhost:8080}/api-docs
+        url: /api/v1/iam/api-docs
       - name: Billing Service
-        url: ${BILLING_SERVICE_URI:http://localhost:8081}/api-docs
+        url: /api/v1/billing/api-docs
       - name: Gateway
         url: /api-docs
   # Allow swagger-ui to reach downstream api-docs through the gateway
@@ -140,6 +156,7 @@ iqkv:
       - /webjars/**
       # Billing — Stripe webhook is public (secured by Stripe signature verification)
       - /api/v1/billing/webhooks/**
+      - /api/v1/billing/api-docs
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"
