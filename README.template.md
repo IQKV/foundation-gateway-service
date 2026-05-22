@@ -7,8 +7,8 @@ Reactive API gateway — the single entry point for all client traffic in the Ke
 The Gateway service owns all cross-cutting concerns so downstream services receive a clean, enriched request context:
 
 - **Authentication enforcement** — validates RS256 JWTs issued by the IAM service; public paths bypass auth via `iqkv.gateway.public-paths`
-- **Identity propagation** — extracts user/tenant claims from the validated JWT and forwards them as trusted headers to downstream services; no downstream service needs to re-parse the token
-- **Security hardening** — strips spoofable context headers (`X-User-*`, `X-Tenant-ID`, `X-Organization-ID`) from every inbound request before JWT processing; adds security response headers on every reply
+- **Identity propagation** — extracts user/tenant claims from the validated JWT; captures technical audit context (IP, User-Agent) and forwards them as trusted headers to downstream services
+- **Security hardening** — strips spoofable context headers (`X-User-*`, `X-Tenant-ID`, `X-Organization-ID`, `X-Audit-*`) from every inbound request before JWT processing; adds security response headers on every reply
 - **Platform mode consistency** — queries IAM's `/actuator/info` on startup and every 60 s to verify `ROLLOUT_MODE` matches; blocks all traffic with `503` if a mismatch is detected
 - **Single-tenant auto-injection** — in `SINGLE_TENANT` mode, injects `X-Tenant-ID` from the configured default tenant key for requests that carry no tenant context
 - **Correlation tracking** — generates or propagates `X-Correlation-ID` on every request; echoes it back on the response
@@ -26,15 +26,16 @@ The Gateway service owns all cross-cutting concerns so downstream services recei
 
 Filters execute in order. Lower numbers run first on the request path, last on the response path.
 
-| Order     | Filter                         | Responsibility                                                                         |
-| --------- | ------------------------------ | -------------------------------------------------------------------------------------- |
-| `HIGHEST` | `PlatformModeGuardFilter`      | Block all traffic with `503` if rollout mode mismatches IAM                            |
-| `-201`    | `MonitoringFilter`             | Record request metrics (rate, duration, status, tenant)                                |
-| `-200`    | `CorrelationIdFilter`          | Generate or propagate `X-Correlation-ID`                                               |
-| `-190`    | `HeaderSanitizationFilter`     | Strip spoofable context headers (`X-User-*`, `X-Tenant-ID`, etc.) from client requests |
-| `-100`    | `JwtContextPropagationFilter`  | Extract JWT claims; set downstream headers                                             |
-| `-50`     | `TenantContextFilter`          | In `SINGLE_TENANT` mode, inject `X-Tenant-ID` when absent                              |
-| `MIN+1`   | `ResponseTransformationFilter` | Add security response headers; echo `X-Correlation-ID` to client                       |
+| Order     | Filter                         | Responsibility                                                                 |
+| --------- | ------------------------------ | ------------------------------------------------------------------------------ |
+| `HIGHEST` | `PlatformModeGuardFilter`      | Block all traffic with `503` if rollout mode mismatches IAM                    |
+| `-201`    | `MonitoringFilter`             | Record request metrics (rate, duration, status, tenant)                        |
+| `-200`    | `CorrelationIdFilter`          | Generate or propagate `X-Correlation-ID`                                       |
+| `-190`    | `HeaderSanitizationFilter`     | Strip spoofable context headers (`X-User-*`, `X-Tenant-ID`, `X-Audit-*`, etc.) |
+| `-180`    | `AuditContextFilter`           | Extract client IP and User-Agent for audit context propagation                 |
+| `-100`    | `JwtContextPropagationFilter`  | Extract JWT claims; set downstream headers                                     |
+| `-50`     | `TenantContextFilter`          | In `SINGLE_TENANT` mode, inject `X-Tenant-ID` when absent                      |
+| `MIN+1`   | `ResponseTransformationFilter` | Add security response headers; echo `X-Correlation-ID` to client               |
 
 Spring Security OAuth2 Resource Server handles JWT signature validation (RS256 via JWKS) before the `JwtContextPropagationFilter` runs.
 
@@ -50,6 +51,9 @@ After the filter chain, every authenticated request to a downstream service carr
 | `X-User-Authorities` | JWT `authorities` claim                                      | Comma-separated authority list |
 | `X-Tenant-ID`        | JWT `tenant_id` claim (or default key in single-tenant mode) | Tenant key                     |
 | `X-Correlation-ID`   | Generated / propagated                                       | Request trace ID               |
+| `X-Audit-IP`         | Client IP address                                            | Original client IP address     |
+| `X-Audit-UA`         | Client User-Agent                                            | Original client User-Agent     |
+| `X-Audit-Source`     | Configured source                                            | Gateway identifier             |
 
 > The gateway strips all of these headers from the inbound client request before JWT processing. Only the gateway sets them — downstream services can trust them unconditionally.
 
@@ -115,6 +119,7 @@ docker compose up -d
 | `BILLING_SERVICE_URI`  | `http://localhost:8084`                       | Billing service base URI (for routing)                                        |
 | `CORS_ALLOWED_ORIGINS` | `*`                                           | Allowed CORS origin patterns                                                  |
 | `DEFAULT_TENANT_KEY`   | _(empty)_                                     | Default tenant key injected in `SINGLE_TENANT` mode                           |
+| `IQKV_AUDIT_SOURCE`    | `web-gateway`                                 | Gateway identifier for audit logging                                          |
 
 > Copy `.env.example` to `.env.local` / `.env.uat` / `.env.prd` and fill in values per environment.
 
@@ -163,7 +168,7 @@ docker compose -f compose.container.yaml up -d
 src/main/java/com/iqkv/foundation/gatewayservice/
 ├── infrastructure/
 │   ├── config/
-│   │   ├── GatewayProperties.java            # @ConfigurationProperties — public paths, tenancy, IAM URL
+│   │   ├── GatewayProperties.java            # @ConfigurationProperties — public paths, audit source, tenancy
 │   │   ├── SecurityConfig.java               # WebFlux security, JWT converter, public path matcher
 │   │   ├── PlatformModeGuardFilter.java      # Startup + periodic rollout mode consistency check
 │   │   └── PlatformConfigurationProperties.java  # rollout-mode binding
@@ -173,6 +178,7 @@ src/main/java/com/iqkv/foundation/gatewayservice/
 │   └── security/
 │       ├── CorrelationIdFilter.java          # Generate/propagate X-Correlation-ID (order -200)
 │       ├── HeaderSanitizationFilter.java     # Strip spoofable headers (order -190)
+│       ├── AuditContextFilter.java           # Extract IP/UA for audit context propagation (order -180)
 │       ├── JwtContextPropagationFilter.java  # Enrich downstream headers from JWT (order -100)
 │       ├── TenantContextFilter.java          # Auto-inject X-Tenant-ID in single-tenant mode (order -50)
 │       └── ResponseTransformationFilter.java # Security headers + correlation echo (order MIN+1)

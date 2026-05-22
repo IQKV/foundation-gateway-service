@@ -24,11 +24,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Gateway-specific configuration properties bound from {@code iqkv.gateway.*}.
  */
 @ConfigurationProperties(prefix = "iqkv.gateway")
-public record GatewayProperties(List<String> publicPaths) {
+public record GatewayProperties(
+    List<String> publicPaths,
+    String auditSource
+) {
 
   public GatewayProperties {
     if (publicPaths == null) {
       publicPaths = List.of();
+    }
+    if (auditSource == null || auditSource.isBlank()) {
+      auditSource = "web-gateway";
     }
   }
 }

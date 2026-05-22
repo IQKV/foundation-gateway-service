@@ -27,59 +27,64 @@ import org.junit.jupiter.api.Test;
 class GatewayPropertiesTest {
 
   @Test
-  @DisplayName("Should create properties with public paths")
+  @DisplayName("Should create properties with public paths and audit source")
   void shouldCreatePropertiesWithPublicPaths() {
     // Arrange
     final var publicPaths = List.of("/api/v1/auth/signin", "/api/v1/auth/signup");
 
     // Act
-    final var properties = new GatewayProperties(publicPaths);
+    final var properties = new GatewayProperties(publicPaths, "test-gateway");
 
     // Assert
     assertThat(properties.publicPaths()).hasSize(2);
     assertThat(properties.publicPaths()).contains("/api/v1/auth/signin", "/api/v1/auth/signup");
+    assertThat(properties.auditSource()).isEqualTo("test-gateway");
   }
 
   @Test
-  @DisplayName("Should create properties with empty list when null provided")
+  @DisplayName("Should create properties with empty list and default audit source when null provided")
   void shouldCreatePropertiesWithEmptyListWhenNullProvided() {
     // Act
-    final var properties = new GatewayProperties(null);
+    final var properties = new GatewayProperties(null, null);
 
     // Assert
     assertThat(properties.publicPaths()).isNotNull();
     assertThat(properties.publicPaths()).isEmpty();
+    assertThat(properties.auditSource()).isEqualTo("web-gateway");
   }
 
   @Test
-  @DisplayName("Should create properties with empty list")
+  @DisplayName("Should create properties with empty list and default audit source")
   void shouldCreatePropertiesWithEmptyList() {
     // Act
-    final var properties = new GatewayProperties(List.of());
+    final var properties = new GatewayProperties(List.of(), "");
 
     // Assert
     assertThat(properties.publicPaths()).isEmpty();
+    assertThat(properties.auditSource()).isEqualTo("web-gateway");
   }
 
   @Test
   @DisplayName("Should support equality comparison")
   void shouldSupportEqualityComparison() {
     // Arrange
-    final var properties1 = new GatewayProperties(List.of("/api/v1/public"));
-    final var properties2 = new GatewayProperties(List.of("/api/v1/public"));
-    final var properties3 = new GatewayProperties(List.of("/api/v1/private"));
+    final var properties1 = new GatewayProperties(List.of("/api/v1/public"), "source1");
+    final var properties2 = new GatewayProperties(List.of("/api/v1/public"), "source1");
+    final var properties3 = new GatewayProperties(List.of("/api/v1/private"), "source1");
+    final var properties4 = new GatewayProperties(List.of("/api/v1/public"), "source2");
 
     // Assert
     assertThat(properties1).isEqualTo(properties2);
     assertThat(properties1).isNotEqualTo(properties3);
+    assertThat(properties1).isNotEqualTo(properties4);
   }
 
   @Test
   @DisplayName("Should generate consistent hashCode")
   void shouldGenerateConsistentHashCode() {
     // Arrange
-    final var properties1 = new GatewayProperties(List.of("/api/v1/health"));
-    final var properties2 = new GatewayProperties(List.of("/api/v1/health"));
+    final var properties1 = new GatewayProperties(List.of("/api/v1/health"), "source1");
+    final var properties2 = new GatewayProperties(List.of("/api/v1/health"), "source1");
 
     // Assert
     assertThat(properties1.hashCode()).isEqualTo(properties2.hashCode());
@@ -89,7 +94,7 @@ class GatewayPropertiesTest {
   @DisplayName("Should generate meaningful toString")
   void shouldGenerateMeaningfulToString() {
     // Arrange
-    final var properties = new GatewayProperties(List.of("/api/v1/actuator"));
+    final var properties = new GatewayProperties(List.of("/api/v1/actuator"), "source1");
 
     // Act
     final var toString = properties.toString();
@@ -97,5 +102,6 @@ class GatewayPropertiesTest {
     // Assert
     assertThat(toString).contains("GatewayProperties");
     assertThat(toString).contains("/api/v1/actuator");
+    assertThat(toString).contains("source1");
   }
 }

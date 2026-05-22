@@ -40,7 +40,10 @@ public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
       "X-User-Authorities",
       "X-User-Permissions",
       "X-Tenant-ID",
-      "X-Organization-ID"
+      "X-Organization-ID",
+      "X-Audit-IP",
+      "X-Audit-UA",
+      "X-Audit-Source"
   );
 
   @Override

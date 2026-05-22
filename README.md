@@ -29,8 +29,8 @@ This is the front door to the IQ Key Value microservices ecosystem. Built on Spr
 
 - **Reactive Gateway**: Spring Cloud Gateway with WebFlux — non-blocking I/O throughout the filter chain
 - **JWT Authentication**: RS256 validation via JWK Set URI exposed by the IAM service; public paths bypass auth via `iqkv.gateway.public-paths`
-- **Header Sanitization**: Strips all `X-User-*`, `X-Tenant-ID`, and `X-Organization-ID` headers from incoming requests before JWT processing to prevent identity spoofing
-- **Context Propagation**: Extracts `userId`, `username`, `email`, `authorities`, and `tenant_id` from the validated JWT and forwards them as typed headers to downstream services
+- **Header Sanitization**: Strips all `X-User-*`, `X-Tenant-ID`, `X-Organization-ID`, and `X-Audit-*` headers from incoming requests before JWT processing to prevent identity spoofing
+- **Context Propagation**: Extracts `userId`, `username`, `email`, `authorities`, and `tenant_id` from the validated JWT; captures client IP and User-Agent for auditing — all forwarded as typed headers to downstream services
 - **Correlation Tracking**: Generates or propagates `X-Correlation-ID` on every request; echoes it back on the response
 - **Response Security Headers**: Injects `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, and `Referrer-Policy` on all responses
 - **Custom Gateway Metrics**: Detailed tracking of request rates, latencies, and errors by `route_id` and `tenant_id`
@@ -72,13 +72,14 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local -P local
 
 Filters execute in order. Each `GlobalFilter` is `Ordered` — lower numbers run first on the request path, last on the response path.
 
-| Order   | Filter                         | Responsibility                                                              |
-| ------- | ------------------------------ | --------------------------------------------------------------------------- |
-| `-201`  | `MonitoringFilter`             | Record request metrics (rate, duration, status, tenant)                     |
-| `-200`  | `CorrelationIdFilter`          | Generate or propagate `X-Correlation-ID`; store in exchange attributes      |
-| `-190`  | `HeaderSanitizationFilter`     | Strip `X-User-*`, `X-Tenant-ID`, `X-Organization-ID` from incoming requests |
-| `-100`  | `JwtContextPropagationFilter`  | Extract user/tenant claims from validated JWT; set downstream headers       |
-| `MIN+1` | `ResponseTransformationFilter` | Add security response headers; echo `X-Correlation-ID` to client            |
+| Order   | Filter                         | Responsibility                                                         |
+| ------- | ------------------------------ | ---------------------------------------------------------------------- |
+| `-201`  | `MonitoringFilter`             | Record request metrics (rate, duration, status, tenant)                |
+| `-200`  | `CorrelationIdFilter`          | Generate or propagate `X-Correlation-ID`; store in exchange attributes |
+| `-190`  | `HeaderSanitizationFilter`     | Strip spoofable headers (`X-User-*`, `X-Tenant-ID`, `X-Audit-*`, etc.) |
+| `-180`  | `AuditContextFilter`           | Extract client IP and User-Agent for audit context propagation         |
+| `-100`  | `JwtContextPropagationFilter`  | Extract user/tenant claims from validated JWT; set downstream headers  |
+| `MIN+1` | `ResponseTransformationFilter` | Add security response headers; echo `X-Correlation-ID` to client       |
 
 Spring Security OAuth2 Resource Server handles JWT signature validation (RS256 via JWKS) before the `JwtContextPropagationFilter` runs.
 
@@ -94,6 +95,9 @@ After the filter chain, downstream services receive the following headers on eve
 | `X-User-Authorities` | JWT `authorities` claim | Comma-separated authority list (e.g. `ADMIN,USER`) |
 | `X-Tenant-ID`        | JWT `tenant_id` claim   | Tenant identifier                                  |
 | `X-Correlation-ID`   | Generated / propagated  | Request correlation ID for distributed tracing     |
+| `X-Audit-IP`         | Client IP address       | Original client IP address for audit logging       |
+| `X-Audit-UA`         | Client User-Agent       | Original client User-Agent for audit logging       |
+| `X-Audit-Source`     | Configured source       | Gateway identifier (e.g. `web-gateway`)            |
 
 **Security note**: The gateway strips all of these headers from the incoming client request before JWT processing. Only the gateway sets them after successful validation — clients cannot spoof user identity by injecting headers.
 
