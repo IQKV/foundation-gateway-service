@@ -87,6 +87,22 @@ spring:
               predicates:
                 - Path=/api/v1/billing/**
 
+            # Audit Service — OpenAPI docs
+            - id: audit-api-docs
+              uri: ${AUDIT_SERVICE_URI:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/audit/api-docs
+              filters:
+                - RewritePath=/api/v1/audit/api-docs, /api-docs
+
+            # Audit Service — all API endpoints (/api/v1/audits/**)
+            # Protected: requires valid JWT with PLATFORM_ADMIN authority (enforced by Audit Service).
+            # Header sanitization (X-Audit-*) is handled globally by HeaderSanitizationFilter.
+            - id: audit-api
+              uri: ${AUDIT_SERVICE_URI:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/audits/**
+
 # ---------------------------------------------------------------------------
 # Actuator
 # ---------------------------------------------------------------------------
@@ -117,6 +133,8 @@ springdoc:
         url: /api/v1/iam/api-docs
       - name: Billing Service
         url: /api/v1/billing/api-docs
+      - name: Audit Service
+        url: /api/v1/audit/api-docs
       - name: Gateway
         url: /api-docs
   # Allow swagger-ui to reach downstream api-docs through the gateway
@@ -159,6 +177,8 @@ iqkv:
       # Billing — Stripe webhook is public (secured by Stripe signature verification)
       - /api/v1/billing/webhooks/**
       - /api/v1/billing/api-docs
+      # Audit — API docs
+      - /api/v1/audit/api-docs
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"

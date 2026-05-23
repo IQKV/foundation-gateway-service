@@ -20,6 +20,7 @@ spring:
 # ===================================================================
 iam-service-uri: ${IAM_SERVICE_URI:http://localhost:8082}
 billing-service-uri: ${BILLING_SERVICE_URI:http://localhost:8084}
+audit-service-uri: ${AUDIT_SERVICE_URI:http://localhost:8086}
 
 iqkv:
   iam:
