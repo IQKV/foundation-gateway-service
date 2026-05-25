@@ -19,6 +19,8 @@ spring:
           jwk-set-uri: ${IAM_JWKS_URI:http://localhost:8080/.well-known/jwks.json}
   cloud:
     gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_LAST
       server:
         webflux:
           # ---------------------------------------------------------------------------
