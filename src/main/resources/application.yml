@@ -97,13 +97,13 @@ spring:
               filters:
                 - RewritePath=/api/v1/audit/api-docs, /api-docs
 
-            # Audit Service — all API endpoints (/api/v1/audits/**)
+            # Audit Service — all API endpoints (/api/v1/audit/**)
             # Protected: requires valid JWT with PLATFORM_ADMIN authority (enforced by Audit Service).
             # Header sanitization (X-Audit-*) is handled globally by HeaderSanitizationFilter.
             - id: audit-api
               uri: ${AUDIT_SERVICE_URI:http://localhost:8086}
               predicates:
-                - Path=/api/v1/audits/**
+                - Path=/api/v1/audit/**
 
 # ---------------------------------------------------------------------------
 # Actuator
