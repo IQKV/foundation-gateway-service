@@ -170,6 +170,8 @@
                 <configuration>
                     <excludes>
                         <exclude>**/*Application.class</exclude>
+                        <exclude>**/infrastructure/config/**</exclude>
+                        <exclude>**/shared/exception/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
