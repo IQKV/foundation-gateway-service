@@ -29,21 +29,36 @@ import reactor.core.publisher.Mono;
 /**
  * Strips all user/tenant context headers from incoming client requests to prevent
  * identity spoofing. Runs before JWT extraction (order {@code -190}).
+ *
+ * <p>{@code X-Tenant-ID} is excluded from stripping on unauthenticated auth endpoints
+ * (signin, refresh) because those requests carry no JWT and the header is the only
+ * mechanism available to supply tenant context.
  */
 @Component
 public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
 
-  private static final List<String> PROTECTED_HEADERS = List.of(
+  /**
+   * Headers that are always stripped — these must never be client-supplied.
+   */
+  private static final List<String> ALWAYS_STRIP = List.of(
       "X-User-ID",
       "X-Username",
       "X-User-Email",
       "X-User-Authorities",
       "X-User-Permissions",
-      "X-Tenant-ID",
       "X-Organization-ID",
       "X-Audit-IP",
       "X-Audit-UA",
       "X-Audit-Source"
+  );
+
+  /**
+   * Auth endpoints that legitimately supply {@code X-Tenant-ID} without a JWT.
+   * {@code X-Tenant-ID} is stripped on all other paths.
+   */
+  private static final List<String> TENANT_HEADER_ALLOWED_PATHS = List.of(
+      "/api/v1/iam/auth/signin",
+      "/api/v1/iam/auth/refresh"
   );
 
   @Override
@@ -53,8 +68,16 @@ public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
 
   @Override
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
+    final String path = exchange.getRequest().getURI().getPath();
+    final boolean allowTenantHeader = TENANT_HEADER_ALLOWED_PATHS.contains(path);
+
     final ServerHttpRequest sanitized = exchange.getRequest().mutate()
-        .headers(headers -> PROTECTED_HEADERS.forEach(headers::remove))
+        .headers(headers -> {
+          ALWAYS_STRIP.forEach(headers::remove);
+          if (!allowTenantHeader) {
+            headers.remove("X-Tenant-ID");
+          }
+        })
         .build();
     return chain.filter(exchange.mutate().request(sanitized).build());
   }
