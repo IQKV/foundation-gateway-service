@@ -55,11 +55,15 @@ public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
   /**
    * Auth endpoints that legitimately supply {@code X-Tenant-ID} without a JWT.
    * {@code X-Tenant-ID} is stripped on all other paths.
+   * WebSocket paths are also included — browsers cannot set custom headers on
+   * WS upgrades, but non-browser clients may supply the tenant via header.
    */
   private static final List<String> TENANT_HEADER_ALLOWED_PATHS = List.of(
       "/api/v1/iam/auth/signin",
       "/api/v1/iam/auth/refresh"
   );
+
+  private static final String WS_PATH_PREFIX = "/api/v1/iam/ws";
 
   @Override
   public int getOrder() {
@@ -69,7 +73,8 @@ public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
   @Override
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
     final String path = exchange.getRequest().getURI().getPath();
-    final boolean allowTenantHeader = TENANT_HEADER_ALLOWED_PATHS.contains(path);
+    final boolean allowTenantHeader = TENANT_HEADER_ALLOWED_PATHS.contains(path)
+        || path.startsWith(WS_PATH_PREFIX);
 
     final ServerHttpRequest sanitized = exchange.getRequest().mutate()
         .headers(headers -> {
