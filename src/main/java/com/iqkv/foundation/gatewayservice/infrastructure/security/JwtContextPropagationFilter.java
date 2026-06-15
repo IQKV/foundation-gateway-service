@@ -41,6 +41,7 @@ import reactor.core.publisher.Mono;
  *   <li>{@code X-User-Email} — email claim</li>
  *   <li>{@code X-User-Authorities} — comma-separated authorities</li>
  *   <li>{@code X-Tenant-ID} — tenant_id claim</li>
+ *   <li>{@code X-Plan-Code} — plan_code claim (absent when no active subscription)</li>
  * </ul>
  */
 @Component
@@ -69,6 +70,7 @@ public class JwtContextPropagationFilter implements GlobalFilter, Ordered {
           setIfPresent(headers, "X-Username", jwt.getClaimAsString("username"));
           setIfPresent(headers, "X-User-Email", jwt.getClaimAsString("email"));
           setIfPresent(headers, "X-Tenant-ID", jwt.getClaimAsString("tenant_id"));
+          setIfPresent(headers, "X-Plan-Code", jwt.getClaimAsString("plan_code"));
 
           final List<String> authorities = jwt.getClaimAsStringList("authorities");
           if (authorities != null && !authorities.isEmpty()) {
