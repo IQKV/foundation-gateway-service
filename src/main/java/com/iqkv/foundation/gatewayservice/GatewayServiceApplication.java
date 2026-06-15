@@ -32,7 +32,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     GatewayProperties.class,
     PlatformConfigurationProperties.class,
     GatewayConfigurationProperties.Tenancy.class,
-    GatewayConfigurationProperties.Iam.class
+    GatewayConfigurationProperties.Iam.class,
+    GatewayConfigurationProperties.Billing.class
 })
 public class GatewayServiceApplication {
 

@@ -168,6 +168,13 @@ iqkv:
     # NOT the main API port (80/8080).
     # Overridden in K8s via IQKV_IAM_SERVICE_URL env var (Spring Boot relaxed binding).
     service-url: ${IQKV_IAM_SERVICE_URL:http://localhost:8081}
+  billing:
+    # Billing service base URL used by PlanCatalogCache
+    service-url: ${BILLING_SERVICE_URI:http://localhost:8081}
+    # How often the plan catalog cache is refreshed (ISO-8601 duration)
+    plan-catalog-refresh-interval: ${PLAN_CATALOG_REFRESH_INTERVAL:PT10M}
+    # Service token with PLATFORM_SERVICE authority for the internal plans endpoint
+    service-token: ${BILLING_SERVICE_TOKEN:}
   gateway:
     # Audit source identifier for platform-wide event tracking
     audit-source: ${IQKV_AUDIT_SOURCE:web-gateway}

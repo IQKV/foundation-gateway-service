@@ -41,6 +41,9 @@ public class GatewayConfigurationProperties {
   @NestedConfigurationProperty
   private Iam iam = new Iam();
 
+  @NestedConfigurationProperty
+  private Billing billing = new Billing();
+
   public Tenancy getTenancy() {
     return tenancy;
   }
@@ -55,6 +58,14 @@ public class GatewayConfigurationProperties {
 
   public void setIam(final Iam iam) {
     this.iam = iam;
+  }
+
+  public Billing getBilling() {
+    return billing;
+  }
+
+  public void setBilling(final Billing billing) {
+    this.billing = billing;
   }
 
   /**
@@ -97,6 +108,54 @@ public class GatewayConfigurationProperties {
 
     public void setServiceUrl(final String serviceUrl) {
       this.serviceUrl = serviceUrl;
+    }
+  }
+
+  /**
+   * Billing service integration properties bound from {@code iqkv.billing.*}.
+   */
+  @ConfigurationProperties(prefix = "iqkv.billing")
+  public static class Billing {
+
+    /**
+     * Base URL of the billing service used by {@code PlanCatalogCache}.
+     */
+    private String serviceUrl = "http://foundation-billing-service:8080";
+
+    /**
+     * How often the plan catalog cache is refreshed.
+     * ISO-8601 duration string, e.g. {@code PT10M}.
+     */
+    private String planCatalogRefreshInterval = "PT10M";
+
+    /**
+     * Service token used to authenticate against the billing internal plans endpoint.
+     * Must carry the {@code PLATFORM_SERVICE} authority.
+     */
+    private String serviceToken = "";
+
+    public String getServiceUrl() {
+      return serviceUrl;
+    }
+
+    public void setServiceUrl(final String serviceUrl) {
+      this.serviceUrl = serviceUrl;
+    }
+
+    public String getPlanCatalogRefreshInterval() {
+      return planCatalogRefreshInterval;
+    }
+
+    public void setPlanCatalogRefreshInterval(final String planCatalogRefreshInterval) {
+      this.planCatalogRefreshInterval = planCatalogRefreshInterval;
+    }
+
+    public String getServiceToken() {
+      return serviceToken;
+    }
+
+    public void setServiceToken(final String serviceToken) {
+      this.serviceToken = serviceToken;
     }
   }
 }
