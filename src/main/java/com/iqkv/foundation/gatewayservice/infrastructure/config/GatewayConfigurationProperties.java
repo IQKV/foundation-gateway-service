@@ -120,7 +120,7 @@ public class GatewayConfigurationProperties {
     /**
      * Base URL of the billing service used by {@code PlanCatalogCache}.
      */
-    private String serviceUrl = "http://foundation-billing-service:8080";
+    private String serviceUrl = "http://foundation-billing-service";
 
     /**
      * How often the plan catalog cache is refreshed.
