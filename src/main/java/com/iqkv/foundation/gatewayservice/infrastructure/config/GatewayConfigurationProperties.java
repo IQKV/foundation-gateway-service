@@ -128,12 +128,6 @@ public class GatewayConfigurationProperties {
      */
     private String planCatalogRefreshInterval = "PT10M";
 
-    /**
-     * Service token used to authenticate against the billing internal plans endpoint.
-     * Must carry the {@code PLATFORM_SERVICE} authority.
-     */
-    private String serviceToken = "";
-
     public String getServiceUrl() {
       return serviceUrl;
     }
@@ -148,14 +142,6 @@ public class GatewayConfigurationProperties {
 
     public void setPlanCatalogRefreshInterval(final String planCatalogRefreshInterval) {
       this.planCatalogRefreshInterval = planCatalogRefreshInterval;
-    }
-
-    public String getServiceToken() {
-      return serviceToken;
-    }
-
-    public void setServiceToken(final String serviceToken) {
-      this.serviceToken = serviceToken;
     }
   }
 }

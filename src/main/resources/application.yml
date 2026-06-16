@@ -173,8 +173,6 @@ iqkv:
     service-url: ${BILLING_SERVICE_URI:http://localhost:8081}
     # How often the plan catalog cache is refreshed (ISO-8601 duration)
     plan-catalog-refresh-interval: ${PLAN_CATALOG_REFRESH_INTERVAL:PT10M}
-    # Service token with PLATFORM_SERVICE authority for the internal plans endpoint
-    service-token: ${BILLING_SERVICE_TOKEN:}
   gateway:
     # Audit source identifier for platform-wide event tracking
     audit-source: ${IQKV_AUDIT_SOURCE:web-gateway}
@@ -190,6 +188,8 @@ iqkv:
       # Billing — Stripe webhook is public (secured by Stripe signature verification)
       - /api/v1/billing/webhooks/**
       - /api/v1/billing/api-docs
+      # Billing — internal plan catalog (no sensitive data, used by services for quota checks)
+      - /api/v1/billing/internal/plans
       # Audit — API docs
       - /api/v1/audit/api-docs
 git:

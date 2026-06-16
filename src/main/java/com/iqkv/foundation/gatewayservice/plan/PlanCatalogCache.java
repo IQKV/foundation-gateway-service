@@ -59,14 +59,9 @@ public class PlanCatalogCache {
 
   public PlanCatalogCache(final GatewayConfigurationProperties.Billing billingProps,
                           final WebClient.Builder webClientBuilder) {
-    final WebClient.Builder builder = webClientBuilder
-        .baseUrl(billingProps.getServiceUrl());
-
-    if (billingProps.getServiceToken() != null && !billingProps.getServiceToken().isBlank()) {
-      builder.defaultHeader("Authorization", "Bearer " + billingProps.getServiceToken());
-    }
-
-    this.billingClient = builder.build();
+    this.billingClient = webClientBuilder
+        .baseUrl(billingProps.getServiceUrl())
+        .build();
   }
 
   @PostConstruct
