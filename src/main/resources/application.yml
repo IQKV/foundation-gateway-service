@@ -190,6 +190,7 @@ iqkv:
       - /api/v1/billing/api-docs
       # Billing — internal plan catalog (no sensitive data, used by services for quota checks)
       - /api/v1/billing/internal/plans
+      - /api/v1/billing/internal/plans/public
       # Audit — API docs
       - /api/v1/audit/api-docs
 git:
