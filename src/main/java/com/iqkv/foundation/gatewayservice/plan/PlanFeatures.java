@@ -16,31 +16,44 @@
 
 package com.iqkv.foundation.gatewayservice.plan;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
- * Local copy of the plan feature set as returned by the billing service internal plans endpoint.
+ * Local copy of the plan feature set as returned by the billing service
+ * {@code GET /api/v1/billing/internal/plans} endpoint.
  *
  * <p>Intentionally a plain record — no shared library dependency on billing service.
  * Only the fields the gateway actually needs for enforcement are mapped;
  * unknown JSON fields are ignored by the Jackson deserializer.
+ *
+ * <p>{@code maxUsers} and {@code maxProjects} are kept as typed {@code int} fields
+ * for compile-time safety. The {@code features} map carries display-oriented and
+ * boolean entitlement flags keyed by feature code — O(1) lookup, insertion order
+ * preserved (Spring Boot binds YAML maps as {@code LinkedHashMap}).
+ *
+ * <p>{@code maxUsers} and {@code maxProjects} use {@code 0} to mean "unlimited".
  */
 public record PlanFeatures(
-    boolean prioritySupport,
     int maxUsers,
-    int maxProjects
+    int maxProjects,
+    Map<String, PlanFeature> features
 ) {
 
   /** Safe fallback used when the plan code is unknown or the cache is empty. */
-  public static final PlanFeatures NONE = new PlanFeatures(false, 1, 1);
+  public static final PlanFeatures NONE = new PlanFeatures(1, 1, Collections.emptyMap());
 
   /**
-   * Returns {@code true} if this plan includes the named boolean feature.
+   * Returns {@code true} if the feature map contains an entry for the given code
+   * whose value is {@code "true"} (case-insensitive). O(1) lookup.
    *
-   * @param feature the feature key (e.g. {@code "priority_support"})
+   * @param code the feature code (e.g. {@code "priority_support"})
    */
-  public boolean has(final String feature) {
-    return switch (feature) {
-      case "priority_support" -> prioritySupport;
-      default -> false;
-    };
+  public boolean has(final String code) {
+    if (code == null || code.isBlank()) {
+      return false;
+    }
+    final PlanFeature feature = features.get(code);
+    return feature != null && "true".equalsIgnoreCase(feature.value());
   }
 }
