@@ -18,6 +18,7 @@ package com.iqkv.foundation.gatewayservice.shared.exception;
 
 import java.nio.charset.StandardCharsets;
 
+import com.iqkv.foundation.gatewayservice.infrastructure.monitoring.GatewayMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -34,7 +35,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebExceptionHandler;
 import reactor.core.publisher.Mono;
-import com.iqkv.foundation.gatewayservice.infrastructure.monitoring.GatewayMetrics;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -106,6 +106,12 @@ public class GlobalExceptionHandler implements WebExceptionHandler {
       log.warn("Access denied: {}", e.getMessage());
       metrics.recordAuthFailure("access_denied");
       return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
+    }
+    if (ex instanceof PlanFeatureNotAvailableException e) {
+      log.warn("Plan feature not available: featureCode={}, planMessage={}", e.getFeatureCode(), e.getMessage());
+      final ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
+      pd.setProperty("featureCode", e.getFeatureCode());
+      return pd;
     }
     if (ex instanceof ResponseStatusException e) {
       log.warn("Response status exception: {}", e.getMessage());

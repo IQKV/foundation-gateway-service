@@ -75,7 +75,7 @@ public class HeaderSanitizationFilter implements GlobalFilter, Ordered {
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
     final String path = exchange.getRequest().getURI().getPath();
     final boolean allowTenantHeader = TENANT_HEADER_ALLOWED_PATHS.contains(path)
-        || path.startsWith(WS_PATH_PREFIX);
+                                      || path.startsWith(WS_PATH_PREFIX);
 
     final ServerHttpRequest sanitized = exchange.getRequest().mutate()
         .headers(headers -> {

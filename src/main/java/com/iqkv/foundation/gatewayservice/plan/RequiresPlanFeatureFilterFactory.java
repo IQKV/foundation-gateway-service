@@ -79,7 +79,9 @@ public class RequiresPlanFeatureFilterFactory
    */
   public static class Config {
 
-    /** The feature key that must be present in the plan (e.g. {@code "priority_support"}). */
+    /**
+     * The feature key that must be present in the plan (e.g. {@code "priority_support"}).
+     */
     private String feature;
 
     public String getFeature() {

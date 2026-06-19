@@ -36,9 +36,9 @@ public class GatewayMetrics {
   /**
    * Records a request.
    *
-   * @param routeId the gateway route ID
-   * @param method the HTTP method
-   * @param status the HTTP status code
+   * @param routeId  the gateway route ID
+   * @param method   the HTTP method
+   * @param status   the HTTP status code
    * @param tenantId the tenant ID (if available)
    */
   public void recordRequest(final String routeId, final String method, final int status, final String tenantId) {
@@ -64,10 +64,10 @@ public class GatewayMetrics {
   /**
    * Stops the timer and records the duration.
    *
-   * @param sample the timer sample
+   * @param sample  the timer sample
    * @param routeId the gateway route ID
-   * @param method the HTTP method
-   * @param status the HTTP status code
+   * @param method  the HTTP method
+   * @param status  the HTTP status code
    */
   public void stopTimer(final Timer.Sample sample, final String routeId, final String method, final int status) {
     sample.stop(Timer.builder("gateway.requests.duration")
@@ -108,7 +108,7 @@ public class GatewayMetrics {
    * Records a downstream service error.
    *
    * @param service the downstream service name
-   * @param status the HTTP status code returned by the service
+   * @param status  the HTTP status code returned by the service
    */
   public void recordDownstreamError(final String service, final int status) {
     Counter.builder("gateway.downstream.errors.total")

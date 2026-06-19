@@ -16,13 +16,13 @@
 
 package com.iqkv.foundation.gatewayservice.plan;
 
+import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
