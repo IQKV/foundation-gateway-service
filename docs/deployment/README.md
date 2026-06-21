@@ -153,9 +153,9 @@ Service URLs are configured per environment in values files:
 
 CORS allowed origins are environment-specific:
 
-- **SIT**: `https://test-app.iqkv.site`, `https://test-auth.iqkv.site`, `http://localhost:3000`, `http://localhost:5173`
-- **UAT**: `https://staging-app.iqkv.site`, `https://staging-auth.iqkv.site`, `https://app.iqkv.site`, `https://auth.iqkv.site`
-- **Production**: `https://app.iqkv.site`, `https://auth.iqkv.site`, `https://iqkv.site`, `https://www.iqkv.site`
+- **SIT**: `https://test-app.iqkv.site`, `http://localhost:3000`, `http://localhost:5173`
+- **UAT**: `https://staging-app.iqkv.site`, `https://app.iqkv.site`, `https://auth.iqkv.site`
+- **Production**: `https://app.iqkv.site`, `https://iqkv.site`, `https://www.iqkv.site`
 
 #### Platform Rollout Mode
 
