@@ -109,6 +109,22 @@ spring:
               predicates:
                 - Path=/api/v1/audit/**
 
+            # CMS Service — OpenAPI docs
+            - id: cms-api-docs
+              uri: ${CMS_SERVICE_URI:http://localhost:8085}
+              predicates:
+                - Path=/api/v1/cms/api-docs
+              filters:
+                - RewritePath=/api/v1/cms/api-docs, /api-docs
+
+            # CMS Service — all API endpoints (/api/v1/cms/**)
+            # Public vs protected distinction is enforced by CMS Service's SecurityConfig.
+            # Header sanitization (X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
+            - id: cms-api
+              uri: ${CMS_SERVICE_URI:http://localhost:8085}
+              predicates:
+                - Path=/api/v1/cms/**
+
 # ---------------------------------------------------------------------------
 # Actuator
 # ---------------------------------------------------------------------------
@@ -141,6 +157,8 @@ springdoc:
         url: /api/v1/billing/api-docs
       - name: Audit Service
         url: /api/v1/audit/api-docs
+      - name: CMS Service
+        url: /api/v1/cms/api-docs
       - name: Gateway
         url: /api-docs
   # Allow swagger-ui to reach downstream api-docs through the gateway
@@ -193,6 +211,10 @@ iqkv:
       - /api/v1/billing/internal/plans/public
       # Audit — API docs
       - /api/v1/audit/api-docs
+      # CMS — API docs
+      - /api/v1/cms/api-docs
+      # CMS — public pages (no auth required)
+      - /api/v1/cms/pages/**
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"
