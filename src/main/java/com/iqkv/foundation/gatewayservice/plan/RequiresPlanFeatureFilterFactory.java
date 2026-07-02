@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * </pre>
  *
  * <p>If the plan catalog cache is empty (e.g. billing is unreachable on startup),
- * all feature checks will use {@link PlanFeatures#NONE} and deny access to gated routes.
+ * all feature checks will use {@link PlanEntitlement#NONE} and deny access to gated routes.
  * This is intentional — fail-safe behaviour prevents unauthorized access during degraded state.
  */
 @Component
@@ -63,7 +63,7 @@ public class RequiresPlanFeatureFilterFactory
   public GatewayFilter apply(final Config config) {
     return (exchange, chain) -> {
       final String planCode = exchange.getRequest().getHeaders().getFirst(X_PLAN_CODE_HEADER);
-      final PlanFeatures features = planCatalogCache.forPlan(planCode);
+      final PlanEntitlement features = planCatalogCache.resolveEntitlement(planCode);
 
       if (!features.has(config.getFeature())) {
         exchange.getResponse().setStatusCode(HttpStatus.PAYMENT_REQUIRED);

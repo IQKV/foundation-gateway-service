@@ -50,10 +50,10 @@ public class PlanCatalogCache {
   /**
    * Local DTO for deserializing the billing internal plans response.
    */
-  record PlanCatalogEntry(String planCode, PlanFeatures features) {
+  record PlanCatalogEntry(String planCode, PlanEntitlement features) {
   }
 
-  private volatile Map<String, PlanFeatures> cache = Map.of();
+  private volatile Map<String, PlanEntitlement> cache = Map.of();
 
   private final WebClient billingClient;
 
@@ -102,16 +102,16 @@ public class PlanCatalogCache {
   }
 
   /**
-   * Returns the {@link PlanFeatures} for the given plan code.
-   * Falls back to {@link PlanFeatures#NONE} when the plan code is unknown or the cache is empty.
+   * Returns the {@link PlanEntitlement} for the given plan code.
+   * Falls back to {@link PlanEntitlement#NONE} when the plan code is unknown or the cache is empty.
    *
    * @param planCode the plan code (e.g. {@code "pro-monthly"})
    * @return the plan's features, never {@code null}
    */
-  public PlanFeatures forPlan(final String planCode) {
+  public PlanEntitlement resolveEntitlement(final String planCode) {
     if (planCode == null || planCode.isBlank()) {
-      return PlanFeatures.NONE;
+      return PlanEntitlement.NONE;
     }
-    return cache.getOrDefault(planCode, PlanFeatures.NONE);
+    return cache.getOrDefault(planCode, PlanEntitlement.NONE);
   }
 }
