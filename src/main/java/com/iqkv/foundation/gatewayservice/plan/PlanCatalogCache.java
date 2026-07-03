@@ -50,7 +50,7 @@ public class PlanCatalogCache {
   /**
    * Local DTO for deserializing the billing internal plans response.
    */
-  record PlanCatalogEntry(String planCode, PlanEntitlement features) {
+  record PlanCatalogEntry(String planCode, PlanEntitlement planEntitlement) {
   }
 
   private volatile Map<String, PlanEntitlement> cache = Map.of();

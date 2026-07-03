@@ -63,9 +63,9 @@ public class RequiresPlanFeatureFilterFactory
   public GatewayFilter apply(final Config config) {
     return (exchange, chain) -> {
       final String planCode = exchange.getRequest().getHeaders().getFirst(X_PLAN_CODE_HEADER);
-      final PlanEntitlement features = planCatalogCache.resolveEntitlement(planCode);
+      final PlanEntitlement planEntitlement = planCatalogCache.resolveEntitlement(planCode);
 
-      if (!features.has(config.getFeature())) {
+      if (!planEntitlement.has(config.getFeature())) {
         exchange.getResponse().setStatusCode(HttpStatus.PAYMENT_REQUIRED);
         return exchange.getResponse().setComplete();
       }
