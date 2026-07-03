@@ -30,34 +30,37 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
- * Local in-memory cache of the billing plan catalog for the gateway.
+ * Resolves plan features for a given plan code in the gateway service.
  *
  * <p>Fetches {@code GET /api/v1/billing/internal/plans} from the billing service at startup
- * and refreshes on a configurable schedule (default: every 10 minutes).
+ * and refreshes on a configurable schedule (default: every 10 minutes). The remote data is
+ * held in a local in-memory map — no remote call is made at resolve time.
  *
- * <p>Falls back to the last known state when billing is temporarily unreachable — the cache
- * is only reset if the gateway restarts while billing is unavailable.
+ * <p>Falls back to the last known state when billing is temporarily unreachable — the map
+ * is only empty if the service starts while billing is unavailable.
  *
- * <p>Used by {@link RequiresPlanFeatureFilterFactory} to resolve plan features from the
- * {@code X-Plan-Code} header without a synchronous call to billing on the hot path.
+ * <p>Usage:
+ * <pre>
+ *   final PlanEntitlement planEntitlement = planResolver.resolveEntitlement(request.getHeader("X-Plan-Code"));
+ * </pre>
  */
 @Component
-public class PlanCatalogCache {
+public class PlanResolver {
 
-  private static final Logger log = LoggerFactory.getLogger(PlanCatalogCache.class);
+  private static final Logger log = LoggerFactory.getLogger(PlanResolver.class);
   private static final String INTERNAL_PLANS_PATH = "/api/v1/billing/internal/plans";
 
   /**
    * Local DTO for deserializing the billing internal plans response.
    */
-  record PlanCatalogEntry(String planCode, PlanEntitlement entitlement) {
+  record PlanEntry(String planCode, PlanEntitlement entitlement) {
   }
 
-  private volatile Map<String, PlanEntitlement> cache = Map.of();
+  private volatile Map<String, PlanEntitlement> plans = Map.of();
 
   private final WebClient billingClient;
 
-  public PlanCatalogCache(final GatewayConfigurationProperties.Billing billingProps,
+  public PlanResolver(final GatewayConfigurationProperties.Billing billingProps,
                           final WebClient.Builder webClientBuilder) {
     this.billingClient = webClientBuilder
         .baseUrl(billingProps.getServiceUrl())
@@ -70,48 +73,44 @@ public class PlanCatalogCache {
   }
 
   /**
-   * Refreshes the plan catalog from the billing service.
-   * Runs on a fixed delay configured by {@code iqkv.billing.plan-catalog-refresh-interval}.
-   * Falls back to the last known cache on failure.
+   * Refreshes the plan data from the billing service.
+   * Runs on a fixed delay configured by {@code iqkv.billing.plan-refresh-interval}.
    */
-  @Scheduled(fixedDelayString = "${iqkv.billing.plan-catalog-refresh-interval:PT10M}")
+  @Scheduled(fixedDelayString = "${iqkv.billing.plan-refresh-interval:PT10M}")
   public void refresh() {
     try {
-      final List<PlanCatalogEntry> plans = billingClient.get()
+      final List<PlanEntry> planEntries = billingClient.get()
           .uri(INTERNAL_PLANS_PATH)
           .retrieve()
-          .bodyToFlux(PlanCatalogEntry.class)
+          .bodyToFlux(PlanEntry.class)
           .collectList()
           .block(Duration.ofSeconds(5));
 
-      if (plans != null && !plans.isEmpty()) {
-        cache = plans.stream()
+      if (planEntries != null && !planEntries.isEmpty()) {
+        plans = planEntries.stream()
             .filter(e -> e.planCode() != null && e.entitlement() != null)
             .collect(Collectors.toUnmodifiableMap(
-                PlanCatalogEntry::planCode,
-                PlanCatalogEntry::entitlement
+                PlanEntry::planCode,
+                PlanEntry::entitlement
             ));
-        log.info("Plan catalog refreshed: {} plans loaded", cache.size());
+        log.info("Plan data refreshed: {} plans loaded", plans.size());
       } else {
-        log.warn("Plan catalog refresh returned empty response — keeping last known state");
+        log.warn("Plan data refresh returned empty response — keeping last known state");
       }
     } catch (final Exception e) {
-      log.warn("Failed to refresh plan catalog from billing service, using last known state: {}",
+      log.warn("Failed to refresh plan data from billing service, using last known state: {}",
           e.getMessage());
     }
   }
 
   /**
    * Returns the {@link PlanEntitlement} for the given plan code.
-   * Falls back to {@link PlanEntitlement#NONE} when the plan code is unknown or the cache is empty.
-   *
-   * @param planCode the plan code (e.g. {@code "pro-monthly"})
-   * @return the plan's features, never {@code null}
+   * Falls back to {@link PlanEntitlement#NONE} when the plan code is unknown or data is unavailable.
    */
   public PlanEntitlement resolveEntitlement(final String planCode) {
     if (planCode == null || planCode.isBlank()) {
       return PlanEntitlement.NONE;
     }
-    return cache.getOrDefault(planCode, PlanEntitlement.NONE);
+    return plans.getOrDefault(planCode, PlanEntitlement.NONE);
   }
 }

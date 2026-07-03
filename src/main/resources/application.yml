@@ -187,10 +187,10 @@ iqkv:
     # Overridden in K8s via IQKV_IAM_SERVICE_URL env var (Spring Boot relaxed binding).
     service-url: ${IQKV_IAM_SERVICE_URL:http://localhost:8081}
   billing:
-    # Billing service base URL used by PlanCatalogCache
+    # Billing service base URL used by PlanResolver
     service-url: ${BILLING_SERVICE_URI:http://localhost:8081}
-    # How often the plan catalog cache is refreshed (ISO-8601 duration)
-    plan-catalog-refresh-interval: ${PLAN_CATALOG_REFRESH_INTERVAL:PT10M}
+    # How often the plan data is refreshed (ISO-8601 duration)
+    plan-refresh-interval: ${BILLING_PLAN_REFRESH_INTERVAL:PT10M}
   gateway:
     # Audit source identifier for platform-wide event tracking
     audit-source: ${IQKV_AUDIT_SOURCE:web-gateway}

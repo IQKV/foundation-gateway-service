@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  * <p>Acts as the single authoritative gate for "does this plan include feature X?" decisions
  * within the gateway. All callers pass the {@code planCode} extracted from the caller's
  * JWT ({@code plan_code} claim); this guard resolves the feature set from the local
- * {@link PlanCatalogCache} — no remote call is made at check time.
+ * {@link PlanResolver} — no remote call is made at check time.
  *
  * <p>A feature is considered <em>enabled</em> when its entry exists in the plan's features
  * map <strong>and</strong> its {@code value} is {@code "true"} (case-insensitive).
@@ -54,10 +54,10 @@ public class PlanFeatureGuard {
    */
   public static final String PRIORITY_SUPPORT = "priority_support";
 
-  private final PlanCatalogCache planCatalogCache;
+  private final PlanResolver planResolver;
 
-  public PlanFeatureGuard(final PlanCatalogCache planCatalogCache) {
-    this.planCatalogCache = planCatalogCache;
+  public PlanFeatureGuard(final PlanResolver planResolver) {
+    this.planResolver = planResolver;
   }
 
   /**
@@ -70,7 +70,7 @@ public class PlanFeatureGuard {
    * @return {@code true} if the feature is enabled for this plan, {@code false} otherwise
    */
   public boolean hasFeature(final String planCode, final String featureCode) {
-    final PlanEntitlement planEntitlement = planCatalogCache.resolveEntitlement(planCode);
+    final PlanEntitlement planEntitlement = planResolver.resolveEntitlement(planCode);
     return planEntitlement.has(featureCode);
   }
 

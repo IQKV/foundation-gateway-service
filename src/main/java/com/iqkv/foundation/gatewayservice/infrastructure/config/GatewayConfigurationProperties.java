@@ -118,15 +118,15 @@ public class GatewayConfigurationProperties {
   public static class Billing {
 
     /**
-     * Base URL of the billing service used by {@code PlanCatalogCache}.
+     * Base URL of the billing service used by {@code PlanResolver}.
      */
     private String serviceUrl = "http://foundation-billing-service";
 
     /**
-     * How often the plan catalog cache is refreshed.
+     * How often the plan data is refreshed.
      * ISO-8601 duration string, e.g. {@code PT10M}.
      */
-    private String planCatalogRefreshInterval = "PT10M";
+    private String planRefreshInterval = "PT10M";
 
     public String getServiceUrl() {
       return serviceUrl;
@@ -136,12 +136,12 @@ public class GatewayConfigurationProperties {
       this.serviceUrl = serviceUrl;
     }
 
-    public String getPlanCatalogRefreshInterval() {
-      return planCatalogRefreshInterval;
+    public String getPlanRefreshInterval() {
+      return planRefreshInterval;
     }
 
-    public void setPlanCatalogRefreshInterval(final String planCatalogRefreshInterval) {
-      this.planCatalogRefreshInterval = planCatalogRefreshInterval;
+    public void setPlanRefreshInterval(final String planRefreshInterval) {
+      this.planRefreshInterval = planRefreshInterval;
     }
   }
 }

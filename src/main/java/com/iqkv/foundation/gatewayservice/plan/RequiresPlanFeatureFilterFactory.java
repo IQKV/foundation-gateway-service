@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Reads the {@code X-Plan-Code} header (stamped by {@code JwtContextPropagationFilter}
  * from the JWT {@code plan_code} claim), looks up the plan's features in the local
- * {@link PlanCatalogCache}, and rejects the request with {@code 402 Payment Required}
+ * {@link PlanResolver}, and rejects the request with {@code 402 Payment Required}
  * if the required feature is not included in the plan.
  *
  * <p>Route configuration example:
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
  *   - RequiresPlanFeature=priority_support
  * </pre>
  *
- * <p>If the plan catalog cache is empty (e.g. billing is unreachable on startup),
+ * <p>If the plan data is empty (e.g. billing is unreachable on startup),
  * all feature checks will use {@link PlanEntitlement#NONE} and deny access to gated routes.
  * This is intentional — fail-safe behaviour prevents unauthorized access during degraded state.
  */
@@ -47,11 +47,11 @@ public class RequiresPlanFeatureFilterFactory
 
   static final String X_PLAN_CODE_HEADER = "X-Plan-Code";
 
-  private final PlanCatalogCache planCatalogCache;
+  private final PlanResolver planResolver;
 
-  public RequiresPlanFeatureFilterFactory(final PlanCatalogCache planCatalogCache) {
+  public RequiresPlanFeatureFilterFactory(final PlanResolver planResolver) {
     super(Config.class);
-    this.planCatalogCache = planCatalogCache;
+    this.planResolver = planResolver;
   }
 
   @Override
@@ -63,7 +63,7 @@ public class RequiresPlanFeatureFilterFactory
   public GatewayFilter apply(final Config config) {
     return (exchange, chain) -> {
       final String planCode = exchange.getRequest().getHeaders().getFirst(X_PLAN_CODE_HEADER);
-      final PlanEntitlement planEntitlement = planCatalogCache.resolveEntitlement(planCode);
+      final PlanEntitlement planEntitlement = planResolver.resolveEntitlement(planCode);
 
       if (!planEntitlement.has(config.getFeature())) {
         exchange.getResponse().setStatusCode(HttpStatus.PAYMENT_REQUIRED);

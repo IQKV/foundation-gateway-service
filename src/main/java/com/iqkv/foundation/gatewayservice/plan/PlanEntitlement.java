@@ -37,13 +37,14 @@ import java.util.Map;
 public record PlanEntitlement(
     int maxUsers,
     int maxProjects,
-    Map<String, PlanFeature> features
+    Map<String, PlanFeature> features,
+    String pricingModel
 ) {
 
   /**
    * Safe fallback used when the plan code is unknown or the cache is empty.
    */
-  public static final PlanEntitlement NONE = new PlanEntitlement(1, 1, Collections.emptyMap());
+  public static final PlanEntitlement NONE = new PlanEntitlement(1, 1, Collections.emptyMap(), null);
 
   /**
    * Returns {@code true} if the feature map contains an entry for the given code
@@ -57,5 +58,23 @@ public record PlanEntitlement(
     }
     final PlanFeature feature = features.get(code);
     return feature != null && "true".equalsIgnoreCase(feature.value());
+  }
+
+  /**
+   * Returns {@code true} if the plan uses per-seat pricing.
+   * Falls back to {@code false} (flat) when {@code pricingModel} is absent — safe for
+   * existing plans that pre-date the per-seat billing feature.
+   */
+  public boolean isPerSeat() {
+    return "PER_SEAT".equalsIgnoreCase(pricingModel);
+  }
+
+  /**
+   * Returns {@code true} if the plan uses flat pricing.
+   * {@code null} or unrecognized values are treated as flat — safe for existing plans
+   * that pre-date the per-seat billing feature.
+   */
+  public boolean isFlatPricing() {
+    return !isPerSeat();
   }
 }
