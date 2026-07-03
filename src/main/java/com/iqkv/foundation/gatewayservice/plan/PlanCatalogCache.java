@@ -86,10 +86,10 @@ public class PlanCatalogCache {
 
       if (plans != null && !plans.isEmpty()) {
         cache = plans.stream()
-            .filter(e -> e.planCode() != null && e.features() != null)
+            .filter(e -> e.planCode() != null && e.entitlement() != null)
             .collect(Collectors.toUnmodifiableMap(
                 PlanCatalogEntry::planCode,
-                PlanCatalogEntry::features
+                PlanCatalogEntry::entitlement
             ));
         log.info("Plan catalog refreshed: {} plans loaded", cache.size());
       } else {
