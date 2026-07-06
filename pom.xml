@@ -11,7 +11,7 @@
     <groupId>com.iqkv</groupId>
     <artifactId>foundation-gateway-service</artifactId>
     <version>0.0.0-SNAPSHOT</version>
-    <name>IQ Key Value Gateway Service</name>
+    <name>IQ Key Value API Gateway Service</name>
     <description>API Gateway with routing and authentication.</description>
 
     <properties>
