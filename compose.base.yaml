@@ -13,15 +13,15 @@ services:
       SPRING_APPLICATION_NAME: foundation-gateway-service
 
       # IAM Service (must be running separately or on shared network)
-      IAM_SERVICE_URI: ${IAM_SERVICE_URI:http://host.docker.internal:8080}
-      IAM_JWKS_URI: ${IAM_JWKS_URI:http://host.docker.internal:8080/.well-known/jwks.json}
-      IQKV_IAM_SERVICE_URL: ${IQKV_IAM_SERVICE_URL:http://host.docker.internal:8081}
+      IAM_SERVICE_URI: ${IAM_SERVICE_URI:-http://host.docker.internal:8080}
+      IAM_JWKS_URI: ${IAM_JWKS_URI:-http://host.docker.internal:8080/.well-known/jwks.json}
+      IQKV_IAM_SERVICE_URL: ${IQKV_IAM_SERVICE_URL:-http://host.docker.internal:8081}
 
       # Billing Service (must be running separately or on shared network)
-      BILLING_SERVICE_URI: ${BILLING_SERVICE_URI:http://host.docker.internal:8080}
+      BILLING_SERVICE_URI: ${BILLING_SERVICE_URI:-http://host.docker.internal:8080}
 
       # CORS
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:*}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
 
       # Observability
       OTEL_SERVICE_NAME: foundation-gateway-service
@@ -58,6 +58,153 @@ services:
         reservations:
           cpus: "0.25"
           memory: 256M
+
+  # PostgreSQL for IAM and Billing - shared instance for gateway dev environment
+  postgres-gateway:
+    image: postgres:17-alpine
+    container_name: foundation-gateway-postgres-dev
+    environment:
+      POSTGRES_DB: iamservice
+      POSTGRES_USER: svc_iam_dba
+      POSTGRES_PASSWORD: svc_iam_dba
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_gateway_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-iam.sql:/docker-entrypoint-initdb.d/init-iam.sql:ro
+      - ./docker/postgres/init-billing.sql:/docker-entrypoint-initdb.d/init-billing.sql:ro
+    networks:
+      - gateway-service-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U svc_iam_dba -d iamservice -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c max_connections=100
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+
+  # RabbitMQ - shared instance for gateway dev environment
+  rabbitmq-gateway:
+    image: rabbitmq:3.13-management-alpine
+    container_name: foundation-gateway-rabbitmq-dev
+    environment:
+      RABBITMQ_DEFAULT_USER: svc_iam_rmq
+      RABBITMQ_DEFAULT_PASS: svc_iam_rmq
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit log_levels [{connection,error},{default,info}] disk_free_limit 2147483648
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI
+    networks:
+      - gateway-service-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # MailHog for local email testing
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: foundation-gateway-mailhog-dev
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - gateway-service-network
+    restart: unless-stopped
+
+  # IAM Service - pre-built image
+  iam-service:
+    image: iqkv/foundation-iam-service:wip
+    container_name: foundation-iam-service-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_APPLICATION_NAME: foundation-iam-service
+      DB_HOST: postgres-gateway
+      DB_PORT: 5432
+      DB_NAME: iamservice
+      DB_USERNAME: svc_iam_dba
+      DB_PASSWORD: svc_iam_dba
+      RABBITMQ_HOST: rabbitmq-gateway
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: svc_iam_rmq
+      RABBITMQ_PASSWORD: svc_iam_rmq
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      JWT_PRIVATE_KEY_PATH: classpath:keys/private.pem
+      JWT_PUBLIC_KEY_PATH: classpath:keys/public.pem
+    ports:
+      - "8082:8080" # IAM Service API (mapped to avoid conflict with Gateway on 8080)
+      - "8083:8081" # Actuator / management
+    depends_on:
+      postgres-gateway:
+        condition: service_healthy
+      rabbitmq-gateway:
+        condition: service_healthy
+    networks:
+      - gateway-service-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+
+  # Billing Service - pre-built image
+  billing-service:
+    image: iqkv/foundation-billing-service:wip
+    container_name: foundation-billing-service-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_APPLICATION_NAME: foundation-billing-service
+      DB_HOST: postgres-gateway
+      DB_PORT: 5432
+      DB_NAME: billingservice
+      DB_USERNAME: svc_billing_dba
+      DB_PASSWORD: svc_billing_dba
+      RABBITMQ_HOST: rabbitmq-gateway
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: svc_iam_rmq
+      RABBITMQ_PASSWORD: svc_iam_rmq
+    ports:
+      - "8084:8080" # Billing Service API
+      - "8085:8081" # Actuator / management
+    depends_on:
+      postgres-gateway:
+        condition: service_healthy
+      rabbitmq-gateway:
+        condition: service_healthy
+    networks:
+      - gateway-service-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
 
   # SonarQube for code quality analysis
   sonar:
@@ -109,6 +256,9 @@ networks:
         - subnet: 172.23.0.0/16
 
 volumes:
+  postgres_gateway_data:
+    name: iqkv_gateway_postgres_data_dev
+    driver: local
   gateway_logs:
     name: iqkv_gateway_logs_dev
     driver: local

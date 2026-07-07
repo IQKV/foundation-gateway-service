@@ -1,127 +1,33 @@
 services:
-  # IAM Service - wip image
-  iam-service:
-    image: iqkv/foundation-iam-service:wip
-    container_name: foundation-iam-service-dev
-    environment:
-      SPRING_PROFILES_ACTIVE: local
-      DB_HOST: postgres-iam
-      DB_PORT: 5432
-      DB_NAME: iamservice
-      DB_USERNAME: svc_iam_dba
-      DB_PASSWORD: svc_iam_dba
-      RABBITMQ_HOST: rabbitmq-iam
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: svc_iam_rmq
-      RABBITMQ_PASSWORD: svc_iam_rmq
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
-      JWT_PRIVATE_KEY_PATH: classpath:keys/private.pem
-      JWT_PUBLIC_KEY_PATH: classpath:keys/public.pem
-    ports:
-      - "8082:8080"
-      - "8083:8081"
-    networks:
-      - gateway-service-network
-    depends_on:
-      postgres-iam:
-        condition: service_healthy
-      rabbitmq-iam:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 90s
-    restart: unless-stopped
+  # PostgreSQL for IAM and Billing
+  postgres-gateway:
+    extends:
+      file: compose.base.yaml
+      service: postgres-gateway
 
-  # Billing Service - wip image
-  billing-service:
-    image: iqkv/foundation-billing-service:wip
-    container_name: foundation-billing-service-dev
-    environment:
-      SPRING_PROFILES_ACTIVE: local
-      DB_HOST: postgres-iam
-      DB_PORT: 5432
-      DB_NAME: billingservice
-      DB_USERNAME: svc_billing_dba
-      DB_PASSWORD: svc_billing_dba
-      RABBITMQ_HOST: rabbitmq-iam
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: svc_iam_rmq
-      RABBITMQ_PASSWORD: svc_iam_rmq
-    ports:
-      - "8084:8080"
-      - "8085:8081"
-    networks:
-      - gateway-service-network
-    depends_on:
-      postgres-iam:
-        condition: service_healthy
-      rabbitmq-iam:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 90s
-    restart: unless-stopped
+  # RabbitMQ
+  rabbitmq-gateway:
+    extends:
+      file: compose.base.yaml
+      service: rabbitmq-gateway
 
-  # PostgreSQL for IAM
-  postgres-iam:
-    image: postgres:17-alpine
-    container_name: foundation-iam-postgres-dev
-    environment:
-      POSTGRES_DB: iamservice
-      POSTGRES_USER: svc_iam_dba
-      POSTGRES_PASSWORD: svc_iam_dba
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./docker/postgres/init-iam.sql:/docker-entrypoint-initdb.d/init-iam.sql:ro
-      - ./docker/postgres/init-billing.sql:/docker-entrypoint-initdb.d/init-billing.sql:ro
-    networks:
-      - gateway-service-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_iam_dba -d iam"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-
-  # RabbitMQ for IAM
-  rabbitmq-iam:
-    image: rabbitmq:3.13-management-alpine
-    container_name: foundation-iam-rabbitmq-dev
-    environment:
-      RABBITMQ_DEFAULT_USER: svc_iam_rmq
-      RABBITMQ_DEFAULT_PASS: svc_iam_rmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - gateway-service-network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    restart: unless-stopped
-
-  # MailHog
+  # MailHog for local email testing
   mailhog:
-    image: mailhog/mailhog:v1.0.1
-    container_name: foundation-iam-mailhog-dev
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-    networks:
-      - gateway-service-network
-    restart: unless-stopped
+    extends:
+      file: compose.base.yaml
+      service: mailhog
+
+  # IAM Service - pre-built image
+  iam-service:
+    extends:
+      file: compose.base.yaml
+      service: iam-service
+
+  # Billing Service - pre-built image
+  billing-service:
+    extends:
+      file: compose.base.yaml
+      service: billing-service
 
   # SonarQube for code quality analysis
   sonar:
@@ -147,6 +53,9 @@ networks:
     external: false
 
 volumes:
-  postgres_iam_data:
-    name: iqkv_postgres_iam_data_dev
-    driver: local
+  postgres_gateway_data:
+    name: iqkv_gateway_postgres_data_dev
+  gateway_logs:
+    name: iqkv_gateway_logs_dev
+  gateway_tmp:
+    name: iqkv_gateway_tmp_dev
