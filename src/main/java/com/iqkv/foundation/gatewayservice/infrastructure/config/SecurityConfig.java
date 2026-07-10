@@ -18,6 +18,7 @@ package com.iqkv.foundation.gatewayservice.infrastructure.config;
 
 import java.util.List;
 
+import com.iqkv.foundation.gatewayservice.infrastructure.security.JwtClaimNames;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -86,7 +87,7 @@ public class SecurityConfig {
   private ReactiveJwtAuthenticationConverter jwtAuthenticationConverter() {
     final var converter = new ReactiveJwtAuthenticationConverter();
     converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-      final List<String> authorities = jwt.getClaimAsStringList("authorities");
+      final List<String> authorities = jwt.getClaimAsStringList(JwtClaimNames.AUTHORITIES);
       if (authorities == null || authorities.isEmpty()) {
         return Flux.empty();
       }

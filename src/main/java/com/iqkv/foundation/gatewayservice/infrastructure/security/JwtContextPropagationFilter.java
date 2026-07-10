@@ -66,13 +66,13 @@ public class JwtContextPropagationFilter implements GlobalFilter, Ordered {
   private ServerWebExchange enrichExchange(final ServerWebExchange exchange, final Jwt jwt) {
     final ServerHttpRequest enriched = exchange.getRequest().mutate()
         .headers(headers -> {
-          setIfPresent(headers, "X-User-ID", jwt.getClaimAsString("userId"));
-          setIfPresent(headers, "X-Username", jwt.getClaimAsString("username"));
-          setIfPresent(headers, "X-User-Email", jwt.getClaimAsString("email"));
-          setIfPresent(headers, "X-Tenant-ID", jwt.getClaimAsString("tenant_id"));
-          setIfPresent(headers, "X-Plan-Code", jwt.getClaimAsString("plan_code"));
+          setIfPresent(headers, "X-User-ID", jwt.getClaimAsString(JwtClaimNames.USER_ID));
+          setIfPresent(headers, "X-Username", jwt.getClaimAsString(JwtClaimNames.USERNAME));
+          setIfPresent(headers, "X-User-Email", jwt.getClaimAsString(JwtClaimNames.EMAIL));
+          setIfPresent(headers, "X-Tenant-ID", jwt.getClaimAsString(JwtClaimNames.TENANT_ID));
+          setIfPresent(headers, "X-Plan-Code", jwt.getClaimAsString(JwtClaimNames.PLAN_CODE));
 
-          final List<String> authorities = jwt.getClaimAsStringList("authorities");
+          final List<String> authorities = jwt.getClaimAsStringList(JwtClaimNames.AUTHORITIES);
           if (authorities != null && !authorities.isEmpty()) {
             headers.set("X-User-Authorities", String.join(",", authorities));
           }
