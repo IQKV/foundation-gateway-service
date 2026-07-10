@@ -17,33 +17,48 @@
 package com.iqkv.foundation.gatewayservice.infrastructure.security;
 
 /**
- * Constants for JWT claim names used throughout the gateway service.
- * All JWT claim access must use these constants — never raw strings.
+ * JWT claim name constants used by the gateway service.
+ *
+ * <p>These claims are issued by the IAM service ({@code foundation-iam-service}) and consumed
+ * here to populate downstream request headers via {@link JwtContextPropagationFilter}.
+ *
+ * <p>Only the claims actually read by this service are declared here.
+ * The authoritative full list lives in {@code JwtClaimNames} inside {@code foundation-iam-service}.
  */
 public final class JwtClaimNames {
 
-  public static final String SUB = "sub";
-  public static final String ISS = "iss";
-  public static final String IAT = "iat";
-  public static final String EXP = "exp";
-  public static final String JTI = "jti";
-  public static final String TYPE = "type";
-  public static final String USER_ID = "userId";
-  public static final String USERNAME = "username";
+  /**
+   * Unique user identifier (UUID string).
+   * Propagated as the {@code X-User-ID} downstream header.
+   */
+  public static final String USER_ID = "user_id";
+
+  /**
+   * User's email address.
+   * Propagated as the {@code X-User-Email} downstream header.
+   */
   public static final String EMAIL = "email";
-  public static final String FIRST_NAME = "firstName";
-  public static final String LAST_NAME = "lastName";
+
+  /**
+   * Tenant key (8-character NanoID).
+   * Propagated as the {@code X-Tenant-ID} downstream header.
+   * Absent on platform-admin tokens.
+   */
   public static final String TENANT_ID = "tenant_id";
-  public static final String AUTHORITIES = "authorities";
-  public static final String EMAIL_VERIFIED = "email_verified";
+
+  /**
+   * Active subscription plan code.
+   * Propagated as the {@code X-Plan-Code} downstream header.
+   * Absent when the user has no active subscription.
+   */
   public static final String PLAN_CODE = "plan_code";
-  public static final String ONBOARDING_COMPLETED = "onboarding_completed";
-  public static final String PROFILE_COMPLETED = "profile_completed";
 
-  public static final String TYPE_ACCESS = "access";
-  public static final String TYPE_REFRESH = "refresh";
-
-  public static final String ISSUER = "foundation-iam-service";
+  /**
+   * Granted authority strings, e.g. {@code ["ROLE_USER", "TENANT_OWNER"]}.
+   * Propagated as the comma-separated {@code X-User-Authorities} downstream header
+   * and mapped to Spring Security {@code GrantedAuthority} instances.
+   */
+  public static final String AUTHORITIES = "authorities";
 
   private JwtClaimNames() {
   }

@@ -36,12 +36,11 @@ import reactor.core.publisher.Mono;
  *
  * <p>Headers added:
  * <ul>
- *   <li>{@code X-User-ID} — userId claim</li>
- *   <li>{@code X-Username} — username claim</li>
- *   <li>{@code X-User-Email} — email claim</li>
- *   <li>{@code X-User-Authorities} — comma-separated authorities</li>
- *   <li>{@code X-Tenant-ID} — tenant_id claim</li>
- *   <li>{@code X-Plan-Code} — plan_code claim (absent when no active subscription)</li>
+ *   <li>{@code X-User-ID} — {@code user_id} claim</li>
+ *   <li>{@code X-User-Email} — {@code email} claim</li>
+ *   <li>{@code X-User-Authorities} — comma-separated {@code authorities} claim</li>
+ *   <li>{@code X-Tenant-ID} — {@code tenant_id} claim</li>
+ *   <li>{@code X-Plan-Code} — {@code plan_code} claim (absent when no active subscription)</li>
  * </ul>
  */
 @Component
@@ -67,7 +66,6 @@ public class JwtContextPropagationFilter implements GlobalFilter, Ordered {
     final ServerHttpRequest enriched = exchange.getRequest().mutate()
         .headers(headers -> {
           setIfPresent(headers, "X-User-ID", jwt.getClaimAsString(JwtClaimNames.USER_ID));
-          setIfPresent(headers, "X-Username", jwt.getClaimAsString(JwtClaimNames.USERNAME));
           setIfPresent(headers, "X-User-Email", jwt.getClaimAsString(JwtClaimNames.EMAIL));
           setIfPresent(headers, "X-Tenant-ID", jwt.getClaimAsString(JwtClaimNames.TENANT_ID));
           setIfPresent(headers, "X-Plan-Code", jwt.getClaimAsString(JwtClaimNames.PLAN_CODE));
