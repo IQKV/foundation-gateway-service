@@ -27,7 +27,7 @@ import org.springframework.validation.annotation.Validated;
  * <pre>
  * iqkv:
  *   tenancy:
- *     default-tenant-key: ${DEFAULT_TENANT_KEY:}
+ *     default-tenant-key: platform
  *   iam:
  *     service-url: ${IAM_SERVICE_URL:http://foundation-iam-service:8080}
  * </pre>
