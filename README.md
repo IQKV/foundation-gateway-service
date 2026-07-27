@@ -1,6 +1,6 @@
 > ## 🤔 What is this service all about?
 >
-> - Reactive API gateway — the single entry point for the IQ Key Value microservices platform.
+> - Reactive API gateway — the single entry point for the iQ Key Value microservices platform.
 > - Handles JWT validation, header sanitization, user/tenant context propagation, and response security hardening.
 > - Make the project easy to maintain with **8 issue templates**.
 > - Quick-start documentation
@@ -10,13 +10,13 @@
 
 ---
 
-# 🌐 IQ Key Value Gateway Service
+# 🌐 iQ Key Value Gateway Service
 
-Reactive API gateway providing JWT authentication, header sanitization, user/tenant context propagation, and observability across the IQ Key Value microservices platform.
+Reactive API gateway providing JWT authentication, header sanitization, user/tenant context propagation, and observability across the iQ Key Value microservices platform.
 
 ## Overview
 
-This is the front door to the IQ Key Value microservices ecosystem. Built on Spring Cloud Gateway with WebFlux, it handles all cross-cutting concerns — authentication, correlation tracking, tenant extraction, and response security hardening — so downstream services receive a clean, enriched request context. For detailed documentation, please refer to the [docs](./docs) directory.
+This is the front door to the iQ Key Value microservices ecosystem. Built on Spring Cloud Gateway with WebFlux, it handles all cross-cutting concerns — authentication, correlation tracking, tenant extraction, and response security hardening — so downstream services receive a clean, enriched request context. For detailed documentation, please refer to the [docs](./docs) directory.
 
 ## Quick Links
 

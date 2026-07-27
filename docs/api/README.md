@@ -1,6 +1,6 @@
 ## 📜 API Documentation
 
-The gateway is the single entry point for the IQ Key Value platform. It proxies requests to downstream services after JWT validation, header sanitization, and context propagation.
+The gateway is the single entry point for the iQ Key Value platform. It proxies requests to downstream services after JWT validation, header sanitization, and context propagation.
 
 ---
 
