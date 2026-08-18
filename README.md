@@ -43,7 +43,7 @@ This is the front door to the iQ Key Value microservices ecosystem. Built on Spr
 
 - Java 25 (Eclipse Temurin)
 - Maven 3.9+
-- Node.js >= 22.15.0 & pnpm >= 11.0.8
+- Node.js >= 22.15.0 & pnpm >= 10.33.2
 - Docker & Docker Compose
 
 ## Quick Start
