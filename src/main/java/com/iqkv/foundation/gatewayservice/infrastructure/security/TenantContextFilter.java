@@ -74,6 +74,13 @@ public class TenantContextFilter implements GlobalFilter, Ordered, TenantContext
   private static final String SIGNIN_PATH = "/api/v1/iam/auth/signin";
 
   /**
+   * Suffix used to identify OpenAPI / Swagger api-docs endpoints.
+   * Requests to these paths are forwarded without tenant injection so that Swagger UI
+   * can fetch downstream specs without requiring a tenant context.
+   */
+  private static final String API_DOCS_SUFFIX = "/api-docs";
+
+  /**
    * Runs after JWT propagation ({@code -100}) so the JWT-derived {@code X-Tenant-ID}
    * is already present when this filter executes.
    */
@@ -100,6 +107,13 @@ public class TenantContextFilter implements GlobalFilter, Ordered, TenantContext
 
   @Override
   public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
+    // Skip tenant resolution for OpenAPI/Swagger api-docs endpoints so that
+    // Swagger UI can fetch downstream specs without requiring a tenant context.
+    final String path = exchange.getRequest().getPath().value();
+    if (path.endsWith(API_DOCS_SUFFIX)) {
+      return chain.filter(exchange);
+    }
+
     final Optional<String> resolved = resolveTenantContext(exchange);
 
     if (resolved.isEmpty()) {
