@@ -71,6 +71,40 @@ project-root/
 - **Infrastructure**: Technical concerns (config, security, persistence framework)
 - **Shared Kernel**: Common code shared across bounded contexts
 
+## Execution Discipline
+
+- Root cause first. Fix the real entry point, not a bypass around it.
+- Read complete affected modules, callers, and tests before editing.
+- After two identical failures without new evidence, change approach — do not retry blindly.
+- Check relevant prerequisites early (`./mvnw verify`). Parallelize independent work.
+- Behavior proven and required gates green: finish. No speculative scope growth.
+
+## Security
+
+- Keep credentials, tokens, and private config out of commits, logs, and shared text.
+- Flag files likely to contain secrets (`.env`, `application-local.yml`) before staging.
+- No hardcoded secrets — use environment variables or Spring config properties.
+- Security filters (`HeaderSanitizationFilter`, `AuditContextFilter`, `JwtContextPropagationFilter`) are on the critical path — verify ordering and completeness after any filter chain change.
+- Use exact or pinned dependency versions. Flag unusual package names before installing.
+- Never bypass `--no-verify` unless explicitly requested.
+
+## Commit Standards
+
+Format: `type(scope): subject`
+
+- Subject: imperative, lowercase, no trailing period, ≤ 72 chars
+- Types: `feat`, `fix`, `improvement`, `refactor`, `docs`, `test`, `chore`, `ci`, `perf`, `revert`
+- Scope: affected area (e.g., `routing`, `security`, `filter`, `config`, `monitoring`, `platform-mode`)
+- For `fix`: describe the symptom and trigger, not the code change
+  - ✅ `fix(filter): correlation ID not propagated when downstream returns 4xx`
+  - ❌ `fix(filter): pass header in error path`
+
+Examples:
+- `feat(routing): add per-tenant route override support`
+- `fix(security): JWT propagation filter skips OPTIONS preflight requests`
+- `refactor(config): consolidate gateway properties into single config class`
+- `chore(deps): update spring-boot to 3.5.0`
+
 ## 🤖 AI Agent Guidelines
 
 ### AI Communication Standards
