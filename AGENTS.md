@@ -96,10 +96,11 @@ Format: `type(scope): subject`
 - Types: `feat`, `fix`, `improvement`, `refactor`, `docs`, `test`, `chore`, `ci`, `perf`, `revert`
 - Scope: affected area (e.g., `routing`, `security`, `filter`, `config`, `monitoring`, `platform-mode`)
 - For `fix`: describe the symptom and trigger, not the code change
-  - ✅ `fix(filter): correlation ID not propagated when downstream returns 4xx`
-  - ❌ `fix(filter): pass header in error path`
+    - ✅ `fix(filter): correlation ID not propagated when downstream returns 4xx`
+    - ❌ `fix(filter): pass header in error path`
 
 Examples:
+
 - `feat(routing): add per-tenant route override support`
 - `fix(security): JWT propagation filter skips OPTIONS preflight requests`
 - `refactor(config): consolidate gateway properties into single config class`
