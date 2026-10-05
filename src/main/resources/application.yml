@@ -125,6 +125,22 @@ spring:
               predicates:
                 - Path=/api/v1/cms/**
 
+            # AI Chat Service — OpenAPI docs
+            - id: aichat-api-docs
+              uri: ${AI_CHAT_SERVICE_URI:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/aichat/api-docs
+              filters:
+                - RewritePath=/api/v1/aichat/api-docs, /api-docs
+
+            # AI Chat Service — all API endpoints (/api/v1/aichat/**)
+            # Public ping at /api/v1/aichat/ping; chat and session endpoints require JWT.
+            # Admin endpoints require PLATFORM_ADMIN authority (enforced by AI Chat Service).
+            - id: aichat-api
+              uri: ${AI_CHAT_SERVICE_URI:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/aichat/**
+
 # ---------------------------------------------------------------------------
 # Actuator
 # ---------------------------------------------------------------------------
@@ -159,6 +175,8 @@ springdoc:
         url: /api/v1/audit/api-docs
       - name: CMS Service
         url: /api/v1/cms/api-docs
+      - name: AI Chat Service
+        url: /api/v1/aichat/api-docs
       - name: Gateway
         url: /api-docs
   # Allow swagger-ui to reach downstream api-docs through the gateway
@@ -215,6 +233,9 @@ iqkv:
       - /api/v1/cms/api-docs
       # CMS — public pages (no auth required)
       - /api/v1/cms/pages/**
+      # AI Chat — API docs and public ping
+      - /api/v1/aichat/api-docs
+      - /api/v1/aichat/ping
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"
