@@ -136,10 +136,15 @@ spring:
             # AI Chat Service — all API endpoints (/api/v1/aichat/**)
             # Public ping at /api/v1/aichat/ping; chat and session endpoints require JWT.
             # Admin endpoints require PLATFORM_ADMIN authority (enforced by AI Chat Service).
+            # ResponseTimeout extended to 180s — LLM inference can be slow for long responses.
             - id: aichat-api
               uri: ${AI_CHAT_SERVICE_URI:http://localhost:8087}
               predicates:
                 - Path=/api/v1/aichat/**
+              filters:
+                - name: ResponseTimeout
+                  args:
+                    timeout: 180000
 
 # ---------------------------------------------------------------------------
 # Actuator
