@@ -1,0 +1,102 @@
+{
+    "groups": [
+        {
+            "name": "iqkv.platform",
+            "type": "com.iqkv.foundation.gatewayservice.infrastructure.config.PlatformConfigurationProperties",
+            "sourceType": "com.iqkv.foundation.gatewayservice.infrastructure.config.PlatformConfigurationProperties",
+            "description": "Platform-wide operational settings. Must be consistent across all core services (IAM, Billing, Gateway, CMS, AI Chat)."
+        },
+        {
+            "name": "iqkv.tenancy",
+            "type": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties$Tenancy",
+            "sourceType": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties",
+            "description": "Tenancy settings used for single-tenant mode."
+        },
+        {
+            "name": "iqkv.iam",
+            "type": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties$Iam",
+            "sourceType": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties",
+            "description": "IAM service integration used by PlatformModeGuardFilter for canonical rollout-mode verification."
+        },
+        {
+            "name": "iqkv.billing",
+            "type": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties$Billing",
+            "sourceType": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayConfigurationProperties",
+            "description": "Billing service integration used by the entitlement PlanResolver."
+        },
+        {
+            "name": "iqkv.gateway",
+            "type": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayProperties",
+            "sourceType": "com.iqkv.foundation.gatewayservice.infrastructure.config.GatewayProperties",
+            "description": "Gateway-specific properties: audit source identifier and the paths that bypass authentication."
+        }
+    ],
+    "properties": [
+        {
+            "name": "iqkv.platform.rollout-mode",
+            "type": "com.iqkv.foundation.gatewayservice.infrastructure.config.RolloutMode",
+            "description": "Platform-wide operational mode. Must match the rollout-mode configured in the other core services. MULTI_TENANT: each signup creates a new tenant with TENANT_OWNER authority. SINGLE_TENANT: all users join a single pre-provisioned default tenant with MEMBER authority.",
+            "defaultValue": "MULTI_TENANT"
+        },
+        {
+            "name": "iqkv.tenancy.default-tenant-key",
+            "type": "java.lang.String",
+            "description": "Default tenant key for SINGLE_TENANT mode. Must match the IAM service configuration. Format: 8-character NanoID using alphabet [a-z0-9]. Optional — when blank the gateway does not auto-inject a tenant key."
+        },
+        {
+            "name": "iqkv.iam.service-url",
+            "type": "java.lang.String",
+            "description": "Base URL of the IAM service used by PlatformModeGuardFilter to verify the canonical rollout mode. Must point to the IAM management port (8081), not the main API port (80/8080)."
+        },
+        {
+            "name": "iqkv.billing.service-url",
+            "type": "java.lang.String",
+            "description": "Base URL of the billing service used by PlanResolver for quota enforcement."
+        },
+        {
+            "name": "iqkv.billing.plan-refresh-interval",
+            "type": "java.lang.String",
+            "description": "How often plan data is refreshed, as an ISO-8601 duration string (e.g. PT10M).",
+            "defaultValue": "PT10M"
+        },
+        {
+            "name": "iqkv.gateway.audit-source",
+            "type": "java.lang.String",
+            "description": "Audit source identifier emitted for platform-wide event tracking. Falls back to 'web-gateway' when blank.",
+            "defaultValue": "web-gateway"
+        },
+        {
+            "name": "iqkv.gateway.public-paths",
+            "type": "java.util.List<java.lang.String>",
+            "description": "Path patterns (Ant-style) that bypass JWT authentication, matched by PlatformModeGuardFilter / SecurityConfig. Defaults to an empty list when unset."
+        }
+    ],
+    "hints": [
+        {
+            "name": "iqkv.platform.rollout-mode",
+            "values": [
+                {
+                    "value": "MULTI_TENANT",
+                    "description": "Multi-tenant mode: each signup creates a new tenant."
+                },
+                {
+                    "value": "SINGLE_TENANT",
+                    "description": "Single-tenant mode: all users join a single pre-provisioned default tenant."
+                }
+            ]
+        },
+        {
+            "name": "iqkv.iam.service-url",
+            "values": [
+                {
+                    "value": "http://localhost:8081",
+                    "description": "Base config / local development (IAM management port)."
+                },
+                {
+                    "value": "http://foundation-iam-service:8081",
+                    "description": "In-cluster IAM management endpoint."
+                }
+            ]
+        }
+    ]
+}
