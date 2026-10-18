@@ -862,16 +862,16 @@ A task is evaluated as done only when all of the following hold:
 
 ### Required gates by change type
 
-| Change type | Required gates |
-| --- | --- |
-| Any change | `mvn -q compile`, then the narrowest targeted `mvn test -Dtest=ClassName` |
-| Domain, filter or routing service logic | Unit tests (JUnit 5 + Mockito, AAA); a new non-trivial branch, loop or parser needs a test |
-| Route, filter or Gateway configuration | Route/filter test, then full `mvn clean verify` |
-| Security (JWT validation, auth filter, `@PreAuthorize`) | Security test, then full `mvn clean verify` |
-| Liquibase changelog | Full `mvn clean verify` — the Spring context and schema must load cleanly |
-| Package/layer move, new bounded context | ArchUnit `*ArchitectureTest`, then full `mvn clean verify` |
-| Dependency or build config | Full `mvn clean verify` |
-| Docs or `AGENTS.md` only | No code gate — state that none applies |
+| Change type                                             | Required gates                                                                             |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Any change                                              | `mvn -q compile`, then the narrowest targeted `mvn test -Dtest=ClassName`                  |
+| Domain, filter or routing service logic                 | Unit tests (JUnit 5 + Mockito, AAA); a new non-trivial branch, loop or parser needs a test |
+| Route, filter or Gateway configuration                  | Route/filter test, then full `mvn clean verify`                                            |
+| Security (JWT validation, auth filter, `@PreAuthorize`) | Security test, then full `mvn clean verify`                                                |
+| Liquibase changelog                                     | Full `mvn clean verify` — the Spring context and schema must load cleanly                  |
+| Package/layer move, new bounded context                 | ArchUnit `*ArchitectureTest`, then full `mvn clean verify`                                 |
+| Dependency or build config                              | Full `mvn clean verify`                                                                    |
+| Docs or `AGENTS.md` only                                | No code gate — state that none applies                                                     |
 
 ### Ordering
 
