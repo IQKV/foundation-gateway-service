@@ -145,6 +145,23 @@ spring:
                 response-timeout: 180000
                 connect-timeout: 5000
 
+            # Catalog Service — OpenAPI docs
+            - id: catalog-api-docs
+              uri: ${CATALOG_SERVICE_URI:http://localhost:8088}
+              predicates:
+                - Path=/api/v1/catalog/api-docs
+              filters:
+                - RewritePath=/api/v1/catalog/api-docs, /api-docs
+
+            # Catalog Service — all API endpoints (/api/v1/catalog/**)
+            # Public ping at /api/v1/catalog/ping; tenant endpoints require JWT with MEMBER
+            # authority, admin endpoints require PLATFORM_ADMIN (enforced by Catalog Service).
+            # Header sanitization (X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
+            - id: catalog-api
+              uri: ${CATALOG_SERVICE_URI:http://localhost:8088}
+              predicates:
+                - Path=/api/v1/catalog/**
+
 # ---------------------------------------------------------------------------
 # Actuator
 # ---------------------------------------------------------------------------
@@ -181,6 +198,8 @@ springdoc:
         url: /api/v1/cms/api-docs
       - name: AI Chat Service
         url: /api/v1/aichat/api-docs
+      - name: Catalog Service
+        url: /api/v1/catalog/api-docs
       - name: Gateway
         url: /api-docs
   # Allow swagger-ui to reach downstream api-docs through the gateway
@@ -240,6 +259,9 @@ iqkv:
       # AI Chat — API docs and public ping
       - /api/v1/aichat/api-docs
       - /api/v1/aichat/ping
+      # Catalog — API docs and public ping
+      - /api/v1/catalog/api-docs
+      - /api/v1/catalog/ping
 git:
   build_time: "@git.build.time@"
   commit: "@git.commit.id.abbrev@"
