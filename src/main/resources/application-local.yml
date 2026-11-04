@@ -22,6 +22,7 @@ iam-service-uri: ${IAM_SERVICE_URI:http://localhost:8082}
 billing-service-uri: ${BILLING_SERVICE_URI:http://localhost:8084}
 audit-service-uri: ${AUDIT_SERVICE_URI:http://localhost:8086}
 cms-service-uri: ${CMS_SERVICE_URI:http://localhost:8085}
+catalog-service-uri: ${CATALOG_SERVICE_URI:http://localhost:8088}
 
 iqkv:
   iam:
