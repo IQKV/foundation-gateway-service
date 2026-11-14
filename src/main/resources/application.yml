@@ -136,10 +136,14 @@ spring:
             # Catalog Service — all API endpoints (/api/v1/catalog/**)
             # Public vs protected distinction is enforced by Catalog Service's SecurityConfig.
             # Header sanitization (X-Tenant-ID) is handled globally by HeaderSanitizationFilter.
+            # response-timeout extended to 120s — /enrichment/extract calls an LLM.
             - id: catalog-api
               uri: ${CATALOG_SERVICE_URI:http://localhost:8088}
               predicates:
                 - Path=/api/v1/catalog/**
+              metadata:
+                response-timeout: 120000
+                connect-timeout: 5000
 
             # AI Chat Service — OpenAPI docs
             - id: aichat-api-docs
